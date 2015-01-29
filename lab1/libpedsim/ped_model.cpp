@@ -18,5 +18,14 @@ const std::vector<Ped::Tagent*> Ped::Model::getAgents() const
 void Ped::Model::tick()
 {
   // EDIT HERE
+  std::vector<Ped::Tagent*> agents = this->getAgents();
+  size_t length = agents.size();
+  for(int i = 0;i < length;i++) {
+    agents[i]->whereToGo();
+  }
+  for(int i = 0;i < length;i++) {
+    agents[i]->go();
+  }
+  std::cout << "test" << std::endl;
 }
 
