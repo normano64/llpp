@@ -42,11 +42,16 @@ void Ped::Model::setImplementation(IMPLEMENTATION impl)
   implementation = impl;
 }
 
+void Ped::Model::setNumThreads(size_t threads)
+{
+  numThreads = threads;
+}
+
 void Ped::Model::tick()
 {
   std::vector<Ped::Tagent*> agents = this->getAgents();
   size_t length = agents.size();
-  size_t nthreads = (MAXTHREADS < length) ? MAXTHREADS : length;
+  size_t nthreads = (numThreads < length) ? numThreads : length;
   pthread_t threads[nthreads];
   size_t chunk = length / nthreads;
   updateArgs args[nthreads];
@@ -63,6 +68,8 @@ void Ped::Model::tick()
 	  }
 	  break;
 	case OMP:
+          omp_set_dynamic(0);
+          omp_set_num_threads(nthreads);
 #pragma omp parallel for shared (agents, length) private (i) schedule(auto)
 	  for(int i = 0; i < length; i++)
 	  {

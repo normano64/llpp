@@ -3,8 +3,6 @@
 #include <vector>
 #include "ped_agent.h"
 
-#define MAXTHREADS 4
-
 namespace Ped{
   enum IMPLEMENTATION {CUDA, VECTOR, OMP, PTHREAD, SEQ};
   class Model
@@ -14,9 +12,11 @@ namespace Ped{
 	  void tick();
 	  const std::vector<Tagent*> getAgents() const;
 	  void setImplementation(IMPLEMENTATION imp);
+	  void setNumThreads(size_t threads);
 	private:
 	  IMPLEMENTATION implementation;
 	  std::vector<Tagent*> agents;
+	  size_t numThreads;
   };
 }
 #endif

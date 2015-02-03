@@ -16,6 +16,7 @@
 #include <chrono>
 #include <ctime>
 #include <cstring>
+#include <fstream>
 #define SIMULATION_STEPS 1000000
 
 
@@ -23,7 +24,10 @@
 int main(int argc, char*argv[]) { 
   Ped::Model model;
   bool timing_mode = 0;
+  bool silent = false;
+  bool plot = false;
   int i = 1;
+  size_t threads = 4;
   QString scenefile = "scenario.xml";
   Ped::IMPLEMENTATION IMP = Ped::IMPLEMENTATION::SEQ;
   // Argument handling
@@ -33,7 +37,8 @@ int main(int argc, char*argv[]) {
 	  {
 		if(strcmp(&argv[i][2],"timing-mode") == 0)
 		{
-	      cout << "Timing mode on\n";
+                  if(!silent)
+                    cout << "Timing mode on\n";
 	      timing_mode = true;
 	    }
 		else if(strcmp(&argv[i][2], "pthread") == 0)
@@ -44,6 +49,19 @@ int main(int argc, char*argv[]) {
 		{
 		  IMP = Ped::IMPLEMENTATION::OMP;
 		}
+                else if(strcmp(&argv[i][2], "threads") == 0)
+                  {
+                    i+=1;
+                    threads = atoi((const char*) argv[i]);
+                  }
+                else if(strcmp(&argv[i][2], "silent") == 0)
+                  {
+                    silent = true;
+                  }
+                else if(strcmp(&argv[i][2], "plot") == 0)
+                  {
+                    plot = true;
+                  }
 		else
 		{
 		  cerr << "Unrecognized command: \"" << argv[i] << "\". Ignoring ..." << endl;
@@ -55,24 +73,28 @@ int main(int argc, char*argv[]) {
 	  }
       i+=1;
     }
-  std::cout << "Running using ";
-  switch(IMP)
-  {
+  if(!silent)
+    {
+      std::cout << "Running using ";
+      switch(IMP)
+        {
 	case Ped::IMPLEMENTATION::SEQ:
 	  std::cout << "sequential implementation." << std::endl;
 	  break;
 	case Ped::IMPLEMENTATION::OMP:
-	  std::cout << "OpenMP implementation." << std::endl;
+	  std::cout << "OpenMP implementation. (" << threads << " threads)" << std::endl;
 	  break;
 	case Ped::IMPLEMENTATION::PTHREAD:
-	  std::cout << "Pthread implementation." << std::endl;
+	  std::cout << "Pthread implementation. (" << threads << " threads)" << std::endl;
 	  break;
 	default:
 	  break;
-  }
+        }
+    }
   ParseScenario parser(scenefile);
   model.setup(parser.getAgents());
   model.setImplementation(IMP);
+  model.setNumThreads(threads);
 
   QApplication app(argc, argv);
   
@@ -96,7 +118,8 @@ int main(int argc, char*argv[]) {
       mainwindow.show();
 
     }
-  cout << "Demo setup complete, running ..." << endl;
+  if(!silent)
+    cout << "Demo setup complete, running ..." << endl;
   int retval = 0;
   std::chrono::time_point<std::chrono::system_clock> start,stop;
   start = std::chrono::system_clock::now();
@@ -114,9 +137,17 @@ int main(int argc, char*argv[]) {
 
   stop = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed_seconds = stop-start;
-  cout << "Time: " << elapsed_seconds.count() << " seconds." << endl;
-
-  cout << "Done" << endl;
+  if(!silent)
+    cout << "Time: " << elapsed_seconds.count() << " seconds." << endl;
+  if(plot)
+    {
+      std::fstream file;
+      file.open("./testdata.txt", std::fstream::out | std::fstream::app);
+      file << "Implementation: " << ((IMP == Ped::IMPLEMENTATION::SEQ) ? "Sequential" : (IMP == Ped::IMPLEMENTATION::OMP) ? "OpenMP  " : "PThreads") << "\t Threads: " << threads << "\t Time: " << elapsed_seconds.count() << " seconds." << endl;
+      file.close();
+    }
+  if(!silent)
+    cout << "Done" << endl;
   delete (timer);
   return retval;
 }
