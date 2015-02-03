@@ -1,5 +1,5 @@
 #!/bin/bash
-LD_LIBRARY_PATH=.
+export LD_LIBRARY_PATH=.
 rm -f ./testdata.txt
 RUNS=2
 THREADS=4
