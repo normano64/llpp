@@ -17,18 +17,18 @@ do
         for n in $(seq 1 $RUNS);
         do
             printf .
-            ./demo --silent --timing-mode --plot --threads 1
+            LD_LIBRARY_PATH=. ./demo --silent --timing-mode --plot --threads 1
         done
     else
         for n in $(seq 1 $RUNS);
         do
             printf .
-            ./demo --silent --timing-mode --pthread --plot --threads "$i"
+            LD_LIBRARY_PATH=. ./demo --silent --timing-mode --pthread --plot --threads "$i"
         done
         for n in $(seq 1 $RUNS);
         do
             printf .
-            ./demo --silent --timing-mode --omp --plot --threads "$i"
+            LD_LIBRARY_PATH=. ./demo --silent --timing-mode --omp --plot --threads "$i"
         done
     fi
     echo ""
