@@ -25,30 +25,54 @@ int main(int argc, char*argv[]) {
   bool timing_mode = 0;
   int i = 1;
   QString scenefile = "scenario.xml";
-
+  Ped::IMPLEMENTATION IMP = Ped::IMPLEMENTATION::SEQ;
   // Argument handling
   while(i < argc)
     {
       if(argv[i][0] == '-' && argv[i][1] == '-')
-	{
-	  if(strcmp(&argv[i][2],"timing-mode") == 0)
-	    {
+	  {
+		if(strcmp(&argv[i][2],"timing-mode") == 0)
+		{
 	      cout << "Timing mode on\n";
 	      timing_mode = true;
 	    }
-	  else
-	    {
-	      cerr << "Unrecognized command: \"" << argv[i] << "\". Ignoring ..." << endl;
-	    }
-	}
+		else if(strcmp(&argv[i][2], "pthread") == 0)
+		{
+		  IMP = Ped::IMPLEMENTATION::PTHREAD;
+		}
+		else if(strcmp(&argv[i][2], "omp") == 0)
+		{
+		  IMP = Ped::IMPLEMENTATION::OMP;
+		}
+		else
+		{
+		  cerr << "Unrecognized command: \"" << argv[i] << "\". Ignoring ..." << endl;
+		}
+	  }
       else // Assume it is a path to scenefile
-	{
-	  scenefile = argv[i];
-	}
+	  {
+		scenefile = argv[i];
+	  }
       i+=1;
     }
+  std::cout << "Running using ";
+  switch(IMP)
+  {
+	case Ped::IMPLEMENTATION::SEQ:
+	  std::cout << "sequential implementation." << std::endl;
+	  break;
+	case Ped::IMPLEMENTATION::OMP:
+	  std::cout << "OpenMP implementation." << std::endl;
+	  break;
+	case Ped::IMPLEMENTATION::PTHREAD:
+	  std::cout << "Pthread implementation." << std::endl;
+	  break;
+	default:
+	  break;
+  }
   ParseScenario parser(scenefile);
   model.setup(parser.getAgents());
+  model.setImplementation(IMP);
 
   QApplication app(argc, argv);
   
