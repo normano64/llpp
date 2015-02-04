@@ -18,8 +18,7 @@
 \begin{document}
 \maketitle
 
-\section{Results}
-\subsection{Plot}
+\section{Plot}
 \begin{center}
   \pgfplotsset{grid style={dotted,gray}}
   \begin{tikzpicture}
@@ -67,9 +66,9 @@
     \end{axis}
   \end{tikzpicture}
 \end{center}
-\subsection{System specification}
+\section{System specification}
 The CPU of the system used for the plot data was an Intel i7 2600k running at the frequency of 4GHz. The system was able to use 4 cores with Hyper-threading enabled, meaning the possible to use 8 logical cores simultaneously with the drawback that the performance gain from using more than 4 cores varies depending on the tasks.
-\subsection{Questions}
+\section{Questions}
 \begin{enumerate}[label=\Alph*.]
 \item \textbf{What kind of parallelism is exposed in the identified method?}\\
   
@@ -80,7 +79,7 @@ The CPU of the system used for the plot data was an Intel i7 2600k running at th
 \item \textbf{Which version (OpenMP, Pthreads) gives you better results? Why?}\\
   
 \end{enumerate}
-\subsection{How to run}
+\section{How to run}
 The demo will be runned with a gui and using the serial implementation if no flag has overwritten the settings. The following flags can be used to alter the demo and change the implementation for the tick function.
 \begin{itemize}[label=,leftmargin=0pt]
 \item \textbf{-\--timing-mode} - Without gui.
