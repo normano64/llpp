@@ -39,5 +39,4 @@ do
     fi
     echo ""
 done
-echo ""
 echo "Tests complete!"
