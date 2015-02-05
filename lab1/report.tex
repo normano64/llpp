@@ -66,26 +66,48 @@
     \end{axis}
   \end{tikzpicture}
 \end{center}
-The data used in the plot is the average of 20 runs for each implementation and is normalized with timing of sequential run as 1 at the time scale.
+The data used in the plot is the average of 20 runs for each
+implementation and is normalized with timing of sequential run as 1 at
+the time scale.
 \section{System specification}
-The CPU of the system used for the plot data was an Intel i7 2600k running at the frequency of 4GHz. The system was able to use 4 cores with Hyper-threading enabled, meaning the possible to use 8 logical cores simultaneously with the drawback that the performance gain from using more than 4 cores varies depending on the tasks.
+The CPU of the system used for the plot data was an Intel i7 2600k
+running at the frequency of 4GHz. The system was able to use 4 cores
+with Hyper-threading enabled, meaning the possible to use 8 logical
+cores simultaneously with the drawback that the performance gain from
+using more than 4 cores varies depending on the tasks.
 \section{Questions}
 \begin{enumerate}[label=\Alph*.]
-\item \textbf{What kind of parallelism is exposed in the identified method?}\\
+\item \textbf{What kind of parallelism is exposed in the identified
+  method?}\\
   
 \item \textbf{How is the workload distributed across the threads?}\\
   
-\item \textbf{Which number of thread gives you the best results? Why?}\\
-  4 or 8 threads gives the best results depending on which implementation that was used. OpenMP gives the best performance at 8 threads while the PThreads implementation at 4 threads. ??????? Our conclusion why PThread lose performance with more than 4 threads is because the overhead from our PThreads implementation counter the performance gain from the Hyper-threading. OpenMP has the best performance at 8 threads, however after 4 threads the gain is minimal. When using more than 9 threads which is more than number of cores the CPU has, the performance for both OpenMP and PThreads gets worse, PThread get even worse result than serial.
-\item \textbf{Which version (OpenMP, Pthreads) gives you better results? Why?}\\
-  
+\item \textbf{Which number of thread gives you the best results?
+  Why?}\\ 4 or 8 threads gives the best results depending on which
+  implementation that was used. OpenMP gives the best performance at 8
+  threads while the PThreads implementation at 4 threads. ??????? Our
+  conclusion why PThread lose performance with more than 4 threads is
+  because the overhead from our PThreads implementation counter the
+  performance gain from the Hyper-threading. OpenMP has the best
+  performance at 8 threads, however after 4 threads the gain is
+  minimal. When using more than 9 threads which is more than number of
+  cores the CPU has, the performance for both OpenMP and PThreads gets
+  worse, PThread get even worse result than serial.
+\item \textbf{Which version (OpenMP, Pthreads) gives you better
+  results? Why?}\\ OpenMP gives the best results in the tests made
+  from 2 to 14 threads. ???
 \end{enumerate}
 \section{How to run}
-The demo will be runned with a gui and using the serial implementation if no flag has overwritten the settings. The following flags can be used to alter the demo and change the implementation for the tick function.
+The demo will be runned with a gui and using the serial implementation
+if no flag has overwritten the settings. The following flags can be
+used to alter the demo and change the implementation for the tick
+function.
 \begin{itemize}[label=,leftmargin=0pt]
 \item \textbf{-\--timing-mode} - Without gui.
 \item \textbf{-\--pthread} - With PThreads implementation.
 \item \textbf{-\--omp} - With OpenMP implementation.
+\item \textbf{-\--threads \textit{number}} - Specifies the demo to use
+  \textit{number} of threads.
 \item \textbf{-\--silent} - Won't print anything.
 \item \textbf{-\--plot} - Stores the timing to the file testdata.txt
 \end{itemize}
