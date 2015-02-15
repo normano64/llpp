@@ -41,7 +41,7 @@ int main(int argc, char*argv[]) {
                     cout << "Timing mode on\n";
 	      timing_mode = true;
 	    }
-		else if(strcmp(&argv[i][2], "pthread") == 0)
+		else if(strcmp(&argv[i][2], "pthreads") == 0)
 		{
 		  IMP = Ped::IMPLEMENTATION::PTHREAD;
 		}
@@ -49,19 +49,23 @@ int main(int argc, char*argv[]) {
 		{
 		  IMP = Ped::IMPLEMENTATION::OMP;
 		}
-                else if(strcmp(&argv[i][2], "threads") == 0)
-                  {
-                    i+=1;
-                    threads = atoi((const char*) argv[i]);
-                  }
-                else if(strcmp(&argv[i][2], "silent") == 0)
-                  {
-                    silent = true;
-                  }
-                else if(strcmp(&argv[i][2], "plot") == 0)
-                  {
-                    plot = true;
-                  }
+		else if(strcmp(&argv[i][2], "threads") == 0)
+		{
+		  i+=1;
+		  threads = atoi((const char*) argv[i]);
+		}
+		else if(strcmp(&argv[i][2], "silent") == 0)
+		{
+		  silent = true;
+		}
+		else if(strcmp(&argv[i][2], "plot") == 0)
+		{
+		  plot = true;
+		}
+		else if(strcmp(&argv[i][2], "simd") == 0 || strcmp(&argv[i][2], "vector") == 0)
+		{
+		  Ped::Tvector::VEC = true;
+		}
 		else
 		{
 		  cerr << "Unrecognized command: \"" << argv[i] << "\". Ignoring ..." << endl;
@@ -79,17 +83,21 @@ int main(int argc, char*argv[]) {
       switch(IMP)
         {
 	case Ped::IMPLEMENTATION::SEQ:
-	  std::cout << "sequential implementation." << std::endl;
+	  std::cout << "sequential implementation";
 	  break;
 	case Ped::IMPLEMENTATION::OMP:
-	  std::cout << "OpenMP implementation. (" << threads << " threads)" << std::endl;
+	  std::cout << "OpenMP implementation (" << threads << " threads)";
 	  break;
 	case Ped::IMPLEMENTATION::PTHREAD:
-	  std::cout << "Pthread implementation. (" << threads << " threads)" << std::endl;
+	  std::cout << "Pthread implementation (" << threads << " threads)";
 	  break;
 	default:
 	  break;
         }
+	  if(Ped::Tvector::VEC)
+		std::cout << " using SIMD operations." << std::endl;
+	  else
+		std::cout << "." << std::endl;
     }
   ParseScenario parser(scenefile);
   model.setup(parser.getAgents());
@@ -105,7 +113,7 @@ int main(int argc, char*argv[]) {
 
   const int delay_ms = 100;
   Timer *timer;
-  #define TICK_LIMIT 10000
+#define TICK_LIMIT 1000//0
   #define AS_FAST_AS_POSSIBLE 0
   if(timing_mode)
     {

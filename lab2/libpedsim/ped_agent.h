@@ -37,8 +37,8 @@ namespace Ped {
     void go();
 
     const Tvector& getPosition() const { return position; }
-    double getX() const { return position.x; };
-    double getY() const { return position.y; };
+    double getX() const { return position.xyz[0]; };
+    double getY() const { return position.xyz[1]; };
 
     void addWaypoint(Twaypoint* wp);
     bool removeWaypoint(const Twaypoint* wp);

@@ -21,8 +21,8 @@ Ped::Tagent::Tagent(double posX, double posY) {
 }
 
 void Ped::Tagent::init(int posX, int posY) {
-  position.x = posX;
-  position.y = posY;
+  position.xyz[0] = posX;
+  position.xyz[1] = posY;
   destination = NULL;
   lastDestination = NULL;
 }
@@ -34,8 +34,8 @@ void Ped::Tagent::whereToGo() {
 void Ped::Tagent::go() {
   Tvector moveForce = waypointForce;
   
-  position.x = round(position.x + moveForce.x);
-  position.y = round(position.y + moveForce.y);
+  position.xyz[0] = round(position.xyz[0] + moveForce.xyz[0]);
+  position.xyz[1] = round(position.xyz[1] + moveForce.xyz[1]);
 }
 
 void Ped::Tagent::addWaypoint(Twaypoint* wp) {
@@ -94,10 +94,10 @@ Ped::Tvector Ped::Tagent::computeDirection() {
     Twaypoint tempDestination(destination->getx(), destination->gety(), destination->getr());
     
     tempDestination.settype(Ped::Twaypoint::TYPE_POINT);
-    direction = tempDestination.getForce(position.x, position.y, 0, 0, &reachesDestination);
+    direction = tempDestination.getForce(position.xyz[0], position.xyz[1], 0, 0, &reachesDestination);
   }
   else {
-    direction = destination->getForce(position.x, position.y,
+    direction = destination->getForce(position.xyz[0], position.xyz[1],
 				      lastDestination->getx(),
 				      lastDestination->gety(),
 				      &reachesDestination);

@@ -25,7 +25,13 @@ namespace Ped {
         Tvector();
 
         // Initializing constructor
-        Tvector(double px, double py, double pz = 0) : x(px), y(py), z(pz) {};
+        Tvector(double px, double py, double pz = .0) 
+		{
+		  xyz[0] = px;
+		  xyz[1] = py;
+		  xyz[2] = pz;
+		  xyz[3] = .0;
+		};
 
 
         // Methods
@@ -64,9 +70,18 @@ namespace Ped {
 
 
         // Attributes
-        double x;
+		double xyz[4] __attribute__((aligned(16)));
+/*        double x;
         double y;
-        double z;
+        double z;*/
+
+		inline double getX() const { return xyz[0]; }
+		inline double getY() const { return xyz[1]; }
+		inline double getZ() const { return xyz[2]; }
+	    void setX(double x) { xyz[0] = x;}
+		void setY(double y) { xyz[1] = y;}
+	    void setZ(double z) { xyz[2] = z;}
+		static bool VEC;
     };
 }
 
