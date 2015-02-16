@@ -25,69 +25,64 @@ namespace Ped {
         Tvector();
 
         // Initializing constructor
-        Tvector(float px, float py, float pz = .0f) 
-		{
-		  xyz[0] = px;
-		  xyz[1] = py;
-		  xyz[2] = pz;
-		  xyz[3] = .0f;
-		};
 
+        Tvector(double px, double py, double pz = .0) {
+            xyz[0] = px;
+            xyz[1] = py;
+            xyz[2] = pz;
+        };
 
         // Methods
-        float length() const;
-        float lengthSquared() const;
+        double length() const;
+        double lengthSquared() const;
+
         void normalize();
         Tvector normalized() const;
-        void scale(float factor);
-        Tvector scaled(float factor) const;
+        void scale(double factor);
+        Tvector scaled(double factor) const;
 
         Tvector leftNormalVector() const;
         Tvector rightNormalVector() const;
 
-        float polarRadius() const;
-        float polarAngle() const;
+        double polarRadius() const;
+        double polarAngle() const;
 
-        float angleTo(const Tvector &other) const;
+        double angleTo(const Tvector &other) const;
 
-        static float scalar(const Tvector &a, const Tvector &b);
-        static float dotProduct(const Tvector &a, const Tvector &b);
+        static double scalar(const Tvector &a, const Tvector &b);
+        static double dotProduct(const Tvector &a, const Tvector &b);
         static Tvector crossProduct(const Tvector &a, const Tvector &b);
 
         std::string to_string() const;
 
-
         // Operators
         Tvector operator+(const Tvector& other) const;
         Tvector operator-(const Tvector& other) const;
-        Tvector operator*(float factor) const;
-        Tvector operator/(float divisor) const;
+        Tvector operator*(double factor) const;
+        Tvector operator/(double divisor) const;
         Tvector& operator+=(const Tvector& vectorIn);
         Tvector& operator-=(const Tvector& vectorIn);
-        Tvector& operator*=(float factor);
+        Tvector& operator*=(double factor);
         Tvector& operator*=(const Tvector& vectorIn);
-        Tvector& operator/=(float divisor);
-
+        Tvector& operator/=(double divisor);
 
         // Attributes
-		float xyz[4] __attribute__((aligned(16)));
-/*        float x;
-        float y;
-        float z;*/
 
-		inline float getX() const { return xyz[0]; }
-		inline float getY() const { return xyz[1]; }
-		inline float getZ() const { return xyz[2]; }
-	    void setX(float x) { xyz[0] = x;}
-		void setY(float y) { xyz[1] = y;}
-	    void setZ(float z) { xyz[2] = z;}
-		static bool VEC;
+        double xyz[3] __attribute__((aligned(16)));
+
+        inline double getX() const { return xyz[0]; }
+        inline double getY() const { return xyz[1]; }
+        inline double getZ() const { return xyz[2]; }
+        void setX(double x) { xyz[0] = x;}
+        void setY(double y) { xyz[1] = y;}
+        void setZ(double z) { xyz[2] = z;}
+        static bool VEC;
     };
 }
 
 bool operator==(const Ped::Tvector& vector1In, const Ped::Tvector& vector2In);
 bool operator!=(const Ped::Tvector& vector1In, const Ped::Tvector& vector2In);
 Ped::Tvector operator-(const Ped::Tvector& vectorIn);
-Ped::Tvector operator*(float factor, const Ped::Tvector& vector);
+Ped::Tvector operator*(double factor, const Ped::Tvector& vector);
 
 #endif
