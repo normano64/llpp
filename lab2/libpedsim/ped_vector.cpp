@@ -13,17 +13,17 @@
 /// \date    2012-01-16
 Ped::Tvector::Tvector()
 {
-  xyz[0] = .0;
-  xyz[1] = .0;
-  xyz[2] = .0;
-  xyz[3] = .0;
+  xyz[0] = .0f;
+  xyz[1] = .0f;
+  xyz[2] = .0f;
+  xyz[3] = .0f;
 }
 
 
 std::string Ped::Tvector::to_string() const {
-  double x_ = xyz[0];
-  double y_ = xyz[1];
-  double z_ = xyz[2];
+  float x_ = xyz[0];
+  float y_ = xyz[1];
+  float z_ = xyz[2];
   std::ostringstream strs;
   strs << x_ << "/" << y_ << "/" << z_;
   return strs.str();
@@ -33,7 +33,7 @@ std::string Ped::Tvector::to_string() const {
 
 /// Returns the length of the vector.
 /// \return the length
-double Ped::Tvector::length() const {
+float Ped::Tvector::length() const {
   if ((xyz[0] == 0) && (xyz[1] == 0) && (xyz[2] == 0)) return 0;  
   return sqrt(lengthSquared());
 }
@@ -41,16 +41,18 @@ double Ped::Tvector::length() const {
 
 /// Returns the length of the vector squared. This is faster than the real length.
 /// \return the length squared
-double Ped::Tvector::lengthSquared() const {
+float Ped::Tvector::lengthSquared() const {
   if(Ped::Tvector::VEC)
   {
-	__m128d vec1 = _mm_load_pd(xyz);
-	__m128d vec2 = _mm_load_pd(&(xyz[2]));
-	vec1 = _mm_mul_pd(vec1, vec1);
-	vec2 = _mm_mul_pd(vec2, vec2);
-	_mm_store_pd((double*)xyz, vec1);
-	_mm_store_pd((double*)&(xyz[2]), vec2);
-	return xyz[0]+xyz[1]+xyz[2];
+	__m128 vec = _mm_load_ps(xyz);
+	vec = _mm_mul_ps(vec, vec);
+    float ret[4] __attribute__((aligned(16)));
+		__m128 t = _mm_add_ps(vec, _mm_movehl_ps(vec, vec));
+	vec = _mm_add_ss(t, _mm_shuffle_ps(t, t, 1));
+	_mm_store_ps(ret, vec);
+	return ret[0];
+/*	_mm_store_ps(ret, vec);
+	return ret[0] + ret[1] + ret[2];*/
   }
   return xyz[0]*xyz[0] + xyz[1]*xyz[1] + xyz[2]*xyz[2];
 }
@@ -59,21 +61,18 @@ double Ped::Tvector::lengthSquared() const {
 /// Normalizes the vector to a length of 1.
 /// \date    2010-02-12
 void Ped::Tvector::normalize() {
-  double len = length();
+  float len = length();
 
   // null vectors cannot be normalized
   if (len == 0)
 	return;
   if(Ped::Tvector::VEC)
   {
-	__m128d vec1 = _mm_load_pd(xyz);
-	__m128d vec2 = _mm_load_pd(&(xyz[2]));
-	double ln[2] __attribute__((aligned(16))) = {len, len};
-	__m128d lnv  = _mm_load_pd(ln);
-	vec1 = _mm_div_pd(vec1, lnv);
-	vec2 = _mm_div_pd(vec2, lnv);
-	_mm_store_pd(xyz, vec1);
-	_mm_store_pd(&(xyz[2]), vec2);
+	__m128 vec = _mm_load_ps(xyz);
+	float ln[4] __attribute__((aligned(16))) = {len, len, len, len};
+	__m128 lnv  = _mm_load_ps(ln);
+	vec = _mm_div_ps(vec, lnv);
+	_mm_store_ps(xyz, vec);
   }
   else
   {
@@ -86,26 +85,22 @@ void Ped::Tvector::normalize() {
     z /= len;*/
 }
 
-
 /// Normalizes the vector to a length of 1.
 /// \date    2013-08-02
 Ped::Tvector Ped::Tvector::normalized() const {
-  double len = length();
+  float len = length();
 
   // null vectors cannot be normalized
   if (len == 0)
 	return Ped::Tvector();;	
   if(Ped::Tvector::VEC)
   {
-	__m128d vec1 = _mm_load_pd(xyz);
-	__m128d vec2 = _mm_load_pd(&(xyz[2]));
-	double ln[2] __attribute__((aligned(16))) = {len, len};
-	__m128d lnv  = _mm_load_pd(ln);
-	double ret[4] __attribute__((aligned(16)));
-	vec1 = _mm_div_pd(vec1, lnv);
-	vec2 = _mm_div_pd(vec2, lnv);
-	_mm_store_pd(ret, vec1);
-	_mm_store_pd(&(ret[2]), vec2);
+	__m128 vec = _mm_load_ps(xyz);
+	float ln[4] __attribute__((aligned(16))) = {len, len, len, len};
+	__m128 lnv  = _mm_load_ps(ln);
+	float ret[4] __attribute__((aligned(16)));
+	vec = _mm_div_ps(vec, lnv);
+	_mm_store_ps(ret, vec);
 	return Ped::Tvector(ret[0], ret[1], ret[2]);
   }
   return Ped::Tvector(xyz[0]/len, xyz[1]/len, xyz[2]/len);
@@ -117,7 +112,7 @@ Ped::Tvector Ped::Tvector::normalized() const {
 /// \return  The scalar product.
 /// \param   &a The first vector
 /// \param   &b The second vector
-double Ped::Tvector::scalar(const Ped::Tvector &a, const Ped::Tvector &b) {
+float Ped::Tvector::scalar(const Ped::Tvector &a, const Ped::Tvector &b) {
   return acos( Ped::Tvector::dotProduct(a, b) / ( a.length() * b.length() ) );
 }
 
@@ -127,19 +122,19 @@ double Ped::Tvector::scalar(const Ped::Tvector &a, const Ped::Tvector &b) {
 /// \return  The scalar product.
 /// \param   &a The first vector
 /// \param   &b The second vector
-double Ped::Tvector::dotProduct(const Ped::Tvector &a, const Ped::Tvector &b) {
+float Ped::Tvector::dotProduct(const Ped::Tvector &a, const Ped::Tvector &b) {
   if(Ped::Tvector::VEC)
   {
-	__m128d av1 = _mm_load_pd(a.xyz);
-	__m128d av2 = _mm_load_pd(&(a.xyz[2]));
-	__m128d bv1 = _mm_load_pd(b.xyz);
-	__m128d bv2 = _mm_load_pd(&(b.xyz[2]));
-	av1 = _mm_mul_pd(av1, bv1);
-	av2 = _mm_mul_pd(av2, bv2);
-	double ret[4] __attribute((aligned(16)));
-	_mm_store_pd(ret, av1);
-	_mm_store_pd(&(ret[2]), av2);
-	return (ret[0] + ret[1] + ret[2]);
+	__m128 av = _mm_load_ps(a.xyz);
+	__m128 bv = _mm_load_ps(b.xyz);
+	av = _mm_mul_ps(av, bv);
+	float ret[4] __attribute((aligned(16)));
+	__m128 t = _mm_add_ps(av, _mm_movehl_ps(av, av));
+	av = _mm_add_ss(t, _mm_shuffle_ps(t, t, 1));
+	_mm_store_ps(ret, av);
+	return ret[0];
+/*	_mm_store_ps(ret, av);
+	return (ret[0]);//et[1] + ret[2]);*/
   }
   return (a.xyz[0]*b.xyz[0] + a.xyz[1]*b.xyz[1] + a.xyz[2]*b.xyz[2]);
 }
@@ -152,31 +147,22 @@ double Ped::Tvector::dotProduct(const Ped::Tvector &a, const Ped::Tvector &b) {
 Ped::Tvector Ped::Tvector::crossProduct(const Ped::Tvector &a, const Ped::Tvector &b) {
   if(Ped::Tvector::VEC)
   {
-	double axyz1[4] __attribute__((aligned(16)))   = {a.xyz[1], a.xyz[2], a.xyz[0], .0};
-	double axyz2[4] __attribute__((aligned(16)))   = {a.xyz[2], a.xyz[0], a.xyz[1], .0};
-	double bxyz1[4] __attribute__((aligned(16)))   = {b.xyz[2], b.xyz[0], b.xyz[1], .0};
-	double bxyz2[4] __attribute__((aligned(16)))   = {b.xyz[1], b.xyz[2], b.xyz[0], .0};
-	double result1[4] __attribute__((aligned(16))) = {.0,   .0,  .0, .0};
-	double result2[4] __attribute__((aligned(16))) = {.0,   .0,  .0, .0};
+	float axyz1[4] __attribute__((aligned(16)))   = {a.xyz[1], a.xyz[2], a.xyz[0], .0f};
+	float axyz2[4] __attribute__((aligned(16)))   = {a.xyz[2], a.xyz[0], a.xyz[1], .0f};
+	float bxyz1[4] __attribute__((aligned(16)))   = {b.xyz[2], b.xyz[0], b.xyz[1], .0f};
+	float bxyz2[4] __attribute__((aligned(16)))   = {b.xyz[1], b.xyz[2], b.xyz[0], .0f};
+	float result1[4] __attribute__((aligned(16))) = {.0f,   .0f,  .0f, .0f};
+	float result2[4] __attribute__((aligned(16))) = {.0f,   .0f,  .0f, .0f};
 
-	__m128d av = _mm_load_pd(axyz1);
-	__m128d bv = _mm_load_pd(bxyz1);
-	av = _mm_mul_pd(av, bv);
-	_mm_store_pd(result1, av);
-  
-	av = _mm_load_pd(&(axyz1[2]));
-	bv = _mm_load_pd(&(bxyz1[2]));
-	av = _mm_mul_pd(av, bv);
-	_mm_store_pd(&(result1[2]), av);
+	__m128 av = _mm_load_ps(axyz1);
+	__m128 bv = _mm_load_ps(bxyz1);
+	av = _mm_mul_ps(av, bv);
+	_mm_store_ps(result1, av);
 
-	av = _mm_load_pd(axyz2);
-	bv = _mm_load_pd(bxyz2);
-	av = _mm_mul_pd(av, bv);
-	_mm_store_pd(result2, av);
-
-	av = _mm_load_pd(&(axyz2[2]));
-	bv = _mm_load_pd(&(bxyz2[2]));
-	_mm_store_pd(&(result2[2]), av);
+	av = _mm_load_ps(axyz2);
+	bv = _mm_load_ps(bxyz2);
+	av = _mm_mul_ps(av, bv);
+	_mm_store_ps(result2, av);
   
 	return Ped::Tvector(
 	  result1[0]-result2[0],
@@ -193,17 +179,14 @@ Ped::Tvector Ped::Tvector::crossProduct(const Ped::Tvector &a, const Ped::Tvecto
 /// Scales this vector by a given factor in each dimension.
 /// \date    2013-08-02
 /// \param   factor The scalar value to multiply with.
-void Ped::Tvector::scale(double factor) {
+void Ped::Tvector::scale(float factor) {
   if(Ped::Tvector::VEC)
   {
-	double fact[2] __attribute__((aligned(16))) = {factor, factor};
-	__m128d factv = _mm_load_pd(fact);
-	__m128d xyzv = _mm_load_pd(xyz);
-	xyzv = _mm_mul_pd(xyzv, factv);
-	_mm_store_pd(xyz, xyzv);
-	xyzv = _mm_load_pd(&(xyz[2]));
-	xyzv = _mm_mul_pd(xyzv, factv);
-	_mm_store_pd(&(xyz[2]), xyzv);
+	float fact[2] __attribute__((aligned(16))) = {factor, factor};
+	__m128 factv = _mm_load_ps(fact);
+	__m128 xyzv = _mm_load_ps(xyz);
+	xyzv = _mm_mul_ps(xyzv, factv);
+	_mm_store_ps(xyz, xyzv);
   }
   else
   {
@@ -218,18 +201,15 @@ void Ped::Tvector::scale(double factor) {
 /// \date    2013-07-16
 /// \return  The scaled vector.
 /// \param   factor The scalar value to multiply with.
-Ped::Tvector Ped::Tvector::scaled(double factor) const {
+Ped::Tvector Ped::Tvector::scaled(float factor) const {
   if(Ped::Tvector::VEC)
   {
-	double fact[2] __attribute__((aligned(16))) = {factor, factor};
-	__m128d factv = _mm_load_pd(fact);
-	__m128d xyzv = _mm_load_pd(xyz);
-	double ret[4] __attribute__((aligned(16)));
-	xyzv = _mm_mul_pd(xyzv, factv);
-	_mm_store_pd(ret, xyzv);
-	xyzv = _mm_load_pd(&(xyz[2]));
-	xyzv = _mm_mul_pd(xyzv, factv);
-	_mm_store_pd(&(ret[2]), xyzv);
+	float fact[2] __attribute__((aligned(16))) = {factor, factor};
+	__m128 factv = _mm_load_ps(fact);
+	__m128 xyzv = _mm_load_ps(xyz);
+	float ret[4] __attribute__((aligned(16)));
+	xyzv = _mm_mul_ps(xyzv, factv);
+	_mm_store_ps(ret, xyzv);
   
 	return Ped::Tvector(ret[0], ret[1], ret[2]);
   }
@@ -244,20 +224,20 @@ Ped::Tvector Ped::Tvector::rightNormalVector() const {
   return Ped::Tvector(xyz[1], -xyz[0]);
 }
 
-double Ped::Tvector::polarRadius() const {
+float Ped::Tvector::polarRadius() const {
   return length();
 }
 
-double Ped::Tvector::polarAngle() const {
+float Ped::Tvector::polarAngle() const {
   return atan2(xyz[1], xyz[0]);
 }
 
-double Ped::Tvector::angleTo(const Tvector &other) const {
-  double angleThis = polarAngle();
-  double angleOther = other.polarAngle();
+float Ped::Tvector::angleTo(const Tvector &other) const {
+  float angleThis = polarAngle();
+  float angleOther = other.polarAngle();
 
   // compute angle
-  double diffAngle = angleOther - angleThis;
+  float diffAngle = angleOther - angleThis;
   // → normalize angle
   if(diffAngle > M_PI)
 	diffAngle -= 2*M_PI;
@@ -270,15 +250,11 @@ double Ped::Tvector::angleTo(const Tvector &other) const {
 Ped::Tvector Ped::Tvector::operator+(const Tvector& other) const {
   if(Ped::Tvector::VEC)
   {
-	__m128d xyzv = _mm_load_pd(xyz);
-	__m128d xyz2v = _mm_load_pd(other.xyz);
-	double ret[4] __attribute__((aligned(16)));
-	xyzv = _mm_add_pd(xyzv, xyz2v);
-	_mm_store_pd(ret, xyzv);
-	xyzv = _mm_load_pd(&(xyz[2]));
-	xyz2v = _mm_load_pd(&(other.xyz[2]));
-	xyzv = _mm_add_pd(xyzv, xyz2v);
-	_mm_store_pd(&(ret[2]), xyzv);
+	__m128 xyzv = _mm_load_ps(xyz);
+	__m128 xyz2v = _mm_load_ps(other.xyz);
+	float ret[4] __attribute__((aligned(16)));
+	xyzv = _mm_add_ps(xyzv, xyz2v);
+	_mm_store_ps(ret, xyzv);
 	return Ped::Tvector(
 	  ret[0],
 	  ret[1],
@@ -293,15 +269,11 @@ Ped::Tvector Ped::Tvector::operator+(const Tvector& other) const {
 Ped::Tvector Ped::Tvector::operator-(const Tvector& other) const {
   if(Ped::Tvector::VEC)
   {
-	__m128d xyzv = _mm_load_pd(xyz);
-	__m128d xyz2v = _mm_load_pd(other.xyz);
-	double ret[4] __attribute__((aligned(16)));
-	xyzv = _mm_sub_pd(xyzv, xyz2v);
-	_mm_store_pd(ret, xyzv);
-	xyzv = _mm_load_pd(&(xyz[2]));
-	xyz2v = _mm_load_pd(&(other.xyz[2]));
-	xyzv = _mm_sub_pd(xyzv, xyz2v);
-	_mm_store_pd(&(ret[2]), xyzv);
+	__m128 xyzv = _mm_load_ps(xyz);
+	__m128 xyz2v = _mm_load_ps(other.xyz);
+	float ret[4] __attribute__((aligned(16)));
+	xyzv = _mm_sub_ps(xyzv, xyz2v);
+	_mm_store_ps(ret, xyzv);
 	return Ped::Tvector(
 	  ret[0],
 	  ret[1],
@@ -313,25 +285,21 @@ Ped::Tvector Ped::Tvector::operator-(const Tvector& other) const {
 	xyz[2] - other.xyz[2]);
 }
 
-Ped::Tvector Ped::Tvector::operator*(double factor) const {
+Ped::Tvector Ped::Tvector::operator*(float factor) const {
   return scaled(factor);
 }
 
-Ped::Tvector Ped::Tvector::operator/(double divisor) const {
+Ped::Tvector Ped::Tvector::operator/(float divisor) const {
   return scaled(1/divisor);
 }
 
 Ped::Tvector& Ped::Tvector::operator+=(const Tvector& vectorIn) {
   if(Ped::Tvector::VEC)
   {
-	__m128d xyzv = _mm_load_pd(xyz);
-	__m128d xyz2v = _mm_load_pd(vectorIn.xyz);
-	xyzv = _mm_add_pd(xyzv, xyz2v);
-	_mm_store_pd(xyz, xyzv);
-	xyzv = _mm_load_pd(&(xyz[2]));
-	xyz2v = _mm_load_pd(&(vectorIn.xyz[2]));
-	xyzv = _mm_add_pd(xyzv, xyz2v);
-	_mm_store_pd(&(xyz[2]), xyzv);
+	__m128 xyzv = _mm_load_ps(xyz);
+	__m128 xyz2v = _mm_load_ps(vectorIn.xyz);
+	xyzv = _mm_add_ps(xyzv, xyz2v);
+	_mm_store_ps(xyz, xyzv);
   }
   else
   {
@@ -345,14 +313,10 @@ Ped::Tvector& Ped::Tvector::operator+=(const Tvector& vectorIn) {
 Ped::Tvector& Ped::Tvector::operator-=(const Tvector& vectorIn) {
   if(Ped::Tvector::VEC)
   {
-	__m128d xyzv = _mm_load_pd(xyz);
-	__m128d xyz2v = _mm_load_pd(vectorIn.xyz);
-	xyzv = _mm_sub_pd(xyzv, xyz2v);
-	_mm_store_pd(xyz, xyzv);
-	xyzv = _mm_load_pd(&(xyz[2]));
-	xyz2v = _mm_load_pd(&(vectorIn.xyz[2]));
-	xyzv = _mm_sub_pd(xyzv, xyz2v);
-	_mm_store_pd(&(xyz[2]), xyzv);
+	__m128 xyzv = _mm_load_ps(xyz);
+	__m128 xyz2v = _mm_load_ps(vectorIn.xyz);
+	xyzv = _mm_sub_ps(xyzv, xyz2v);
+	_mm_store_ps(xyz, xyzv);
   }
   else
   {
@@ -363,7 +327,7 @@ Ped::Tvector& Ped::Tvector::operator-=(const Tvector& vectorIn) {
   return *this;
 }
 
-Ped::Tvector& Ped::Tvector::operator*=(double factor) {
+Ped::Tvector& Ped::Tvector::operator*=(float factor) {
   scale(factor);
   return *this;
 }
@@ -371,14 +335,10 @@ Ped::Tvector& Ped::Tvector::operator*=(double factor) {
 Ped::Tvector& Ped::Tvector::operator*=(const Tvector& vectorIn) {
   if(Ped::Tvector::VEC)
   {
-	__m128d xyzv = _mm_load_pd(xyz);
-	__m128d xyz2v = _mm_load_pd(vectorIn.xyz);
-	xyzv = _mm_mul_pd(xyzv, xyz2v);
-	_mm_store_pd(xyz, xyzv);
-	xyzv = _mm_load_pd(&(xyz[2]));
-	xyz2v = _mm_load_pd(&(vectorIn.xyz[2]));
-	xyzv = _mm_mul_pd(xyzv, xyz2v);
-	_mm_store_pd(&(xyz[2]), xyzv);
+	__m128 xyzv = _mm_load_ps(xyz);
+	__m128 xyz2v = _mm_load_ps(vectorIn.xyz);
+	xyzv = _mm_mul_ps(xyzv, xyz2v);
+	_mm_store_ps(xyz, xyzv);
   }
   else
   {
@@ -389,7 +349,7 @@ Ped::Tvector& Ped::Tvector::operator*=(const Tvector& vectorIn) {
   return *this;
 }
 
-Ped::Tvector& Ped::Tvector::operator/=(double divisor) {
+Ped::Tvector& Ped::Tvector::operator/=(float divisor) {
   scale(1/divisor);
   return *this;
 }
@@ -409,15 +369,11 @@ bool operator!=(const Ped::Tvector& vector1In, const Ped::Tvector& vector2In) {
 Ped::Tvector operator+(const Ped::Tvector& vector1In, const Ped::Tvector& vector2In) {
   if(Ped::Tvector::VEC)
   {
-	__m128d xyzv = _mm_load_pd(vector1In.xyz);
-	__m128d xyz2v = _mm_load_pd(vector2In.xyz);
-	double ret[4] __attribute__((aligned(16)));
-	xyzv = _mm_add_pd(xyzv, xyz2v);
-	_mm_store_pd(ret, xyzv);
-	xyzv = _mm_load_pd(&(vector1In.xyz[2]));
-	xyz2v = _mm_load_pd(&(vector2In.xyz[2]));
-	xyzv = _mm_add_pd(xyzv, xyz2v);
-	_mm_store_pd(&(ret[2]), xyzv);
+	__m128 xyzv = _mm_load_ps(vector1In.xyz);
+	__m128 xyz2v = _mm_load_ps(vector2In.xyz);
+	float ret[4] __attribute__((aligned(16)));
+	xyzv = _mm_add_ps(xyzv, xyz2v);
+	_mm_store_ps(ret, xyzv);
 	return Ped::Tvector(
 	  ret[0],
 	  ret[1],
@@ -432,15 +388,11 @@ Ped::Tvector operator+(const Ped::Tvector& vector1In, const Ped::Tvector& vector
 Ped::Tvector operator-(const Ped::Tvector& vector1In, const Ped::Tvector& vector2In) {
   if(Ped::Tvector::VEC)
   {
-	__m128d xyzv = _mm_load_pd(vector1In.xyz);
-	__m128d xyz2v = _mm_load_pd(vector2In.xyz);
-	double ret[4] __attribute__((aligned(16)));
-	xyzv = _mm_sub_pd(xyzv, xyz2v);
-	_mm_store_pd(ret, xyzv);
-	xyzv = _mm_load_pd(&(vector1In.xyz[2]));
-	xyz2v = _mm_load_pd(&(vector2In.xyz[2]));
-	xyzv = _mm_sub_pd(xyzv, xyz2v);
-	_mm_store_pd(&(ret[2]), xyzv);
+	__m128 xyzv = _mm_load_ps(vector1In.xyz);
+	__m128 xyz2v = _mm_load_ps(vector2In.xyz);
+	float ret[4] __attribute__((aligned(16)));
+	xyzv = _mm_sub_ps(xyzv, xyz2v);
+	_mm_store_ps(ret, xyzv);
 	return Ped::Tvector(
 	  ret[0],
 	  ret[1],
@@ -459,7 +411,7 @@ Ped::Tvector operator-(const Ped::Tvector& vectorIn) {
 	-vectorIn.xyz[2]);
 }
 
-Ped::Tvector operator*(double factor, const Ped::Tvector& vector) {
+Ped::Tvector operator*(float factor, const Ped::Tvector& vector) {
   return vector.scaled(factor);
 }
 

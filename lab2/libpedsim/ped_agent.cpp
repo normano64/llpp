@@ -70,7 +70,7 @@ void Ped::Tagent::whereToGo() {
     destination = getNextDestination();
   if (destination == NULL) {
     // Don't move, if nowhere to go
-    waypointForce = Ped::Tvector(0, 0, 0).normalized();
+    waypointForce = Ped::Tvector(0, 0, 0);
   }
 
   Tvector direction;
