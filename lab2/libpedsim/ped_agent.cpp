@@ -27,10 +27,6 @@ void Ped::Tagent::init(int posX, int posY) {
   lastDestination = NULL;
 }
 
-void Ped::Tagent::whereToGo() {
-  computeForces();
-}
-
 void Ped::Tagent::go() {
   Tvector moveForce = waypointForce;
   
@@ -70,22 +66,11 @@ void Ped::Tagent::clearWaypoints() {
   }
 }
 
-void Ped::Tagent::computeForces() {
-  waypointForce = computeWaypointForce();
-}
-
-Ped::Tvector Ped::Tagent::computeWaypointForce() {
-  destination = getNextDestination();
-  Tvector waypointDirection = computeDirection();
-  Tvector force = waypointDirection.normalized();
-
-  return force;
-}
-
-Ped::Tvector Ped::Tagent::computeDirection() {
+void Ped::Tagent::whereToGo() {
+    destination = getNextDestination();
   if (destination == NULL) {
     // Don't move, if nowhere to go
-    return Ped::Tvector(0, 0, 0);
+    waypointForce = Ped::Tvector(0, 0, 0).normalized();
   }
 
   Tvector direction;
@@ -113,7 +98,7 @@ Ped::Tvector Ped::Tagent::computeDirection() {
     destination = NULL;
   }
 
-  return direction;
+  waypointForce = direction.normalized();
 }
 
 Ped::Twaypoint* Ped::Tagent::getNextDestination() {

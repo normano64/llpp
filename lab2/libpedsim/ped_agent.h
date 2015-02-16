@@ -54,6 +54,8 @@ namespace Ped {
     // The current position
     Tvector position;
 
+    //double position.xyz[2] __attribute__((aligned(16)));
+
     Twaypoint* destination;
     Twaypoint* lastDestination;
 
@@ -62,16 +64,10 @@ namespace Ped {
 
     // The force towards the current destination
     Tvector waypointForce;
-
-   // Computes the forces that determine the next position
-    void computeForces();
     
     // Interntal init function 
     void init(int posX, int posY);
 
-    // Computing waypoint force and directions
-    Tvector computeWaypointForce();
-    Tvector computeDirection();
     Twaypoint* getNextDestination();
     Twaypoint* getNextWaypoint();
   };
