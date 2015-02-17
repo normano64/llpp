@@ -7,7 +7,6 @@
 #include <iostream>
 
 const char *kernelsource = "                                               \
-  #pragma OPENCL EXTENSION cl_khr_fp64 : enable                            \
   __kernel void go(__global double *agentX,                                \
                    __global double *agentY,                                \
                    __global double *waypointX,                             \
@@ -16,7 +15,7 @@ const char *kernelsource = "                                               \
                    __global bool *waypointRad) {                           \
     int i = get_global_id(0);                                              \
     double waypointXn = waypointX[i] - agentX[i];                          \
-    double waypointYn = waypointX[i] - agentX[i];                          \
+    double waypointYn = waypointY[i] - agentY[i];                          \
     double length = sqrt(waypointXn*waypointXn + waypointYn*waypointYn);   \
     if(length < waypointR[i]) {                                            \
         waypointRad[i] = true;                                             \
@@ -52,7 +51,6 @@ void Ped::Model::setup(vector<Ped::Tagent*> agentsInScenario, IMPLEMENTATION imp
             waypointY[i] = agents[i]->destination->gety();
             waypointR[i] = agents[i]->destination->getr();
         }
-        std::cout << "ost " << tempagentsX[1] << "," << tempagentsY[1] << std::endl;
         
         int size = length * sizeof(double);
         int sizeB = length * sizeof(bool);
@@ -85,6 +83,9 @@ void Ped::Model::setup(vector<Ped::Tagent*> agentsInScenario, IMPLEMENTATION imp
         program = clCreateProgramWithSource(context, 1, (const char **)&kernelsource, NULL, &ret);
 
         ret = clBuildProgram(program, 1, &device_id, NULL, NULL, NULL);
+        if(ret != CL_SUCCESS) {
+            std::cout << "error: " << ret << std::endl;
+        }
 
         kernel = clCreateKernel(program, "go", &ret);
 
@@ -149,6 +150,7 @@ void Ped::Model::tick() {
             agents[i]->whereToGo();
             agents[i]->go();
         }
+        std::cout << "ost " << agents[1]->getX() << "," << agents[1]->getY() << std::endl;
         break;
     case OMP:
         omp_set_dynamic(0);
@@ -177,7 +179,7 @@ void Ped::Model::tick() {
         break;
     case OPENCL:
         size_t global_item_size = length;
-        size_t local_item_size = 64;
+        size_t local_item_size = 100;
         
         int size = length * sizeof(double);
         int sizeB = length * sizeof(bool);
@@ -195,6 +197,7 @@ void Ped::Model::tick() {
             agents[i]->setX(tempagentsX[i]);
             agents[i]->setY(tempagentsY[i]);
             if(waypointRad[i] == true) {
+                agents[i]->waypoints.push_back(agents[i]->destination);
                 agents[i]->destination = agents[i]->getNextDestination();
                 
                 waypointX[i] = agents[i]->destination->getx();
