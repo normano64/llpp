@@ -2,21 +2,46 @@
 #define _ped_model_h_
 #include <vector>
 #include "ped_agent.h"
+#include <CL/cl.h>
 
 namespace Ped{
-  enum IMPLEMENTATION {CUDA, VECTOR, OMP, PTHREAD, SEQ};
+  enum IMPLEMENTATION {OPENCL, VECTOR, OMP, PTHREAD, SEQ};
   class Model
   {
 	public:
-	  void setup(std::vector<Tagent*> agentsInScenario);
+      void setup(std::vector<Tagent*> agentsInScenario, IMPLEMENTATION imp);
 	  void tick();
 	  const std::vector<Tagent*> getAgents() const;
-	  void setImplementation(IMPLEMENTATION imp);
 	  void setNumThreads(size_t threads);
 	private:
 	  IMPLEMENTATION implementation;
 	  std::vector<Tagent*> agents;
 	  size_t numThreads;
+          double *tempagentsX;
+          double *tempagentsY;
+          double *waypointX;
+          double *waypointY;
+          double *waypointR;
+          bool *waypointRad;
+          cl_context context;
+ 
+          cl_command_queue command_queue;
+ 
+          cl_mem agentX_mem_obj;
+          cl_mem agentY_mem_obj;
+          cl_mem waypointX_mem_obj;
+          cl_mem waypointY_mem_obj;
+          cl_mem waypointR_mem_obj;
+          cl_mem waypointRad_mem_obj;
+          cl_program program;
+          cl_platform_id platform_id;
+          cl_device_id device_id;   
+          cl_uint ret_num_devices;
+          cl_uint ret_num_platforms;
+          cl_int ret;
+          cl_kernel kernel;
+          size_t global_item_size;
+          size_t local_item_size;
   };
 }
 #endif

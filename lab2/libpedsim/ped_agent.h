@@ -16,6 +16,7 @@
 #endif
 
 #include "ped_vector.h"
+#include "ped_waypoint.h"
 #include <vector>
 #include <deque>
 
@@ -39,6 +40,8 @@ namespace Ped {
     const Tvector& getPosition() const { return position; }
     double getX() const { return position.xyz[0]; };
     double getY() const { return position.xyz[1]; };
+    void setX(double X) { position.xyz[0] = X; };
+    void setY(double Y) { position.xyz[1] = Y; };
 
     void addWaypoint(Twaypoint* wp);
     bool removeWaypoint(const Twaypoint* wp);
@@ -47,6 +50,9 @@ namespace Ped {
 
     bool reachedDestination() { return (destination == NULL); };
 
+    Twaypoint* destination;
+    Twaypoint* getNextDestination();
+    deque<Twaypoint*> waypoints;
     
   private:
     Tagent() {};
@@ -56,10 +62,8 @@ namespace Ped {
 
     //double position.xyz[2] __attribute__((aligned(16)));
 
-    Twaypoint* destination;
     Twaypoint* lastDestination;
 
-    deque<Twaypoint*> waypoints;
     int waypointBehavior;
 
     // The force towards the current destination
@@ -68,7 +72,6 @@ namespace Ped {
     // Interntal init function 
     void init(int posX, int posY);
 
-    Twaypoint* getNextDestination();
     Twaypoint* getNextWaypoint();
   };
 }

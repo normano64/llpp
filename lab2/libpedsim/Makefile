@@ -2,11 +2,11 @@
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
 	CXX_ = g++
-	LDFLAGS_ = -msse -msse2 -msse4 -msse4.1 -msse4.2 -lpthread -fopenmp -shared -Wl,-soname,libpedsim.so
+	LDFLAGS_ = -lOpenCL -msse -msse2 -msse4.1 -msse4.2 -lpthread -fopenmp -shared -Wl,-soname,libpedsim.so
 endif
 ifeq ($(UNAME_S),Darwin)
 	CXX_ = g++-4.9
-	LDFLAGS_ = -msse -msse2 -msse4 -msse4.1 -msse4.2 -lpthread -fopenmp -shared -Wl,-install_name,libpedsim.so
+	LDFLAGS_ = -lOpenCL -msse -msse2 -msse4.1 -msse4.2 -lpthread -fopenmp -shared -Wl,-install_name,libpedsim.so
 endif
 
 NVCC = nvcc
@@ -16,7 +16,7 @@ OBJECTS_CXX = $(SOURCES_CXX:.cpp=.cxx.o)
 SOURCES_CU = tick_cuda.cu
 OBJECTS_CU = $(SOURCES_CU:.cu=.cu.o)
 
-CXXFLAGS_ = -msse -msse2 -msse4 -msse4.1 -msse4.2 -lpthread -fopenmp -g -O3 -fno-inline -fPIC
+CXXFLAGS_ = -lOpenCL -msse -msse2 -msse4.1 -msse4.2 -lpthread -fopenmp -g -O3 -fno-inline -fPIC
 
 
 # Workaround to make project compile on non-cuda capable machines.

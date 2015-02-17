@@ -54,6 +54,11 @@ int main(int argc, char*argv[]) {
 		  i+=1;
 		  threads = atoi((const char*) argv[i]);
 		}
+                else if(strcmp(&argv[i][2], "opencl") == 0)
+		{
+		  IMP = Ped::IMPLEMENTATION::OPENCL;
+                  Ped::Tvector::VEC = false;
+		}
 		else if(strcmp(&argv[i][2], "silent") == 0)
 		{
 		  silent = true;
@@ -64,7 +69,7 @@ int main(int argc, char*argv[]) {
 		}
 		else if(strcmp(&argv[i][2], "simd") == 0 || strcmp(&argv[i][2], "vector") == 0)
 		{
-		  Ped::Tvector::VEC = true;
+                    Ped::Tvector::VEC = true;
 		}
 		else
 		{
@@ -91,6 +96,9 @@ int main(int argc, char*argv[]) {
 	case Ped::IMPLEMENTATION::PTHREAD:
 	  std::cout << "Pthread implementation (" << threads << " threads)";
 	  break;
+        case Ped::IMPLEMENTATION::OPENCL:
+	  std::cout << "OpenCL implementation";
+	  break;
 	default:
 	  break;
         }
@@ -100,8 +108,7 @@ int main(int argc, char*argv[]) {
 		std::cout << "." << std::endl;
     }
   ParseScenario parser(scenefile);
-  model.setup(parser.getAgents());
-  model.setImplementation(IMP);
+  model.setup(parser.getAgents(),IMP);
   model.setNumThreads(threads);
 
   QApplication app(argc, argv);
