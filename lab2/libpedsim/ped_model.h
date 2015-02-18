@@ -17,22 +17,16 @@ namespace Ped{
 	  IMPLEMENTATION implementation;
 	  std::vector<Tagent*> agents;
 	  size_t numThreads;
-          double *tempagentsX;
-          double *tempagentsY;
-          double *waypointX;
-          double *waypointY;
-          double *waypointR;
-          bool *waypointRad;
+          double *tempagents;
+          double *waypoints;
           cl_context context;
+
+          int size;
  
           cl_command_queue command_queue;
  
-          cl_mem agentX_mem_obj;
-          cl_mem agentY_mem_obj;
-          cl_mem waypointX_mem_obj;
-          cl_mem waypointY_mem_obj;
-          cl_mem waypointR_mem_obj;
-          cl_mem waypointRad_mem_obj;
+          cl_mem agents_mem_obj;
+          cl_mem waypoints_mem_obj;
           cl_program program;
           cl_platform_id platform_id;
           cl_device_id device_id;   

@@ -75,7 +75,7 @@ Ped::Tvector Ped::Twaypoint::normalpoint(double p1, double p2, double oc11, doub
 /// \param   *reached Set to true if the agent has reached the waypoint in this call.
 /// \return  Tvector The calculated force
 Ped::Tvector Ped::Twaypoint::getForce(double agentX, double agentY, double fromx, double fromy, bool *reached) const {
-    if(type == Ped::Twaypoint::TYPE_NORMAL) {
+    if(type == Ped::Twaypoint::TYPE_NORMAL || type == Ped::Twaypoint::TYPE_POINT) {
         Tvector diff(x - agentX, y - agentY);
 
         if(reached != NULL) {
@@ -85,46 +85,7 @@ Ped::Tvector Ped::Twaypoint::getForce(double agentX, double agentY, double fromx
                 *reached = false;
         }
         return diff.normalized();
-
-// Old code: (why is this so complicated?)
-//          Tvector diff(x - fromx, y - fromy);
-//          Tvector diffDirection = diff.normalized();
-//          Tvector scaledDiffDirection = r * diffDirection;
-//
-//          double oc11 = x + scaledDiffDirection.x;
-//          double oc12 = y - scaledDiffDirection.y;
-//          double oc21 = x - scaledDiffDirection.x;
-//          double oc22 = y + scaledDiffDirection.y;
-//
-//          Ped::Tvector pnormal = normalpoint(agentX, agentY, oc11, oc12, oc21, oc22);
-//          //TODO: use normalpoint(Tvector(p1, p2), Tvector(oc11, oc12), Tvector(oc21, oc22));
-//
-//          Tvector pndistance(agentX - pnormal.x, agentY - pnormal.y);
-//          double pndist = pndistance.length();
-//
-//          if(pndist == 0)
-//              return Ped::Tvector();
-//
-//          if(reached != NULL) {
-//              if(pndist < 3)
-//                  *reached = true;
-//              else
-//                  *reached = false;
-//          }
-//          return -pndistance.normalized();
-    }
-    else if(type == Ped::Twaypoint::TYPE_POINT) {
-        Tvector diff(x - agentX, y - agentY);
-
-        if(reached != NULL) {
-            if(diff.length() < r)
-                *reached = true;
-            else
-                *reached = false;
-        }
-        return diff.normalized();
-    }
-    else {
+    } else {
         // unknown waypoint type
         return Tvector();
     }

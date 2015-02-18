@@ -36,7 +36,6 @@ void Ped::Tagent::init(int posX, int posY) {
     position.xyz[0] = posX;
     position.xyz[1] = posY;
     destination = NULL;
-    lastDestination = NULL;
 }
 
 void Ped::Tagent::go() {
@@ -62,8 +61,6 @@ void Ped::Tagent::addWaypoint(Twaypoint* wp) {
 bool Ped::Tagent::removeWaypoint(const Twaypoint* wp) {
     if (destination == wp)
         destination = NULL;
-    if (lastDestination == wp)
-        lastDestination = NULL;
   
     bool removed = false;
     for (int i = waypoints.size(); i > 0; --i) {
@@ -80,7 +77,6 @@ bool Ped::Tagent::removeWaypoint(const Twaypoint* wp) {
 
 void Ped::Tagent::clearWaypoints() {
     destination = NULL;
-    lastDestination = NULL;
   
     for (int i = waypoints.size(); i > 0; --i) {
         waypoints.pop_front();
@@ -95,26 +91,14 @@ void Ped::Tagent::whereToGo() {
         waypointForce = Ped::Tvector(0, 0, 0);
     }
 
-    Tvector direction;
     bool reachesDestination = false; // if agent reaches destination in n
-    if (lastDestination == NULL) {
-        Twaypoint tempDestination(destination->getx(), destination->gety(), destination->getr());
-    
-        tempDestination.settype(Ped::Twaypoint::TYPE_POINT);
-        direction = tempDestination.getForce(position.xyz[0], position.xyz[1], 0, 0, &reachesDestination);
-    }
-    else {
-        direction = destination->getForce(position.xyz[0], position.xyz[1],lastDestination->getx(),lastDestination->gety(),&reachesDestination);
-    }
+    waypointForce = destination->getForce(position.xyz[0], position.xyz[1],0,0,&reachesDestination);
 
     // Circular waypoint chasing
     if (reachesDestination == true) {
         waypoints.push_back(destination);
-
-        lastDestination = destination;
         destination = NULL;
     }
-    waypointForce = direction.normalized();
 }
 
 Ped::Twaypoint* Ped::Tagent::getNextDestination() {

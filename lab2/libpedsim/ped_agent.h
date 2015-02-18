@@ -53,6 +53,7 @@ namespace Ped {
     Twaypoint* destination;
     Twaypoint* getNextDestination();
     deque<Twaypoint*> waypoints;
+    Twaypoint* getNextWaypoint();
     
   private:
     Tagent() {};
@@ -62,8 +63,6 @@ namespace Ped {
 
     //double position.xyz[2] __attribute__((aligned(16)));
 
-    Twaypoint* lastDestination;
-
     int waypointBehavior;
 
     // The force towards the current destination
@@ -72,7 +71,6 @@ namespace Ped {
     // Interntal init function 
     void init(int posX, int posY);
 
-    Twaypoint* getNextWaypoint();
   };
 }
 
