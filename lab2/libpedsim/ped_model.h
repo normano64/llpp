@@ -19,14 +19,16 @@ namespace Ped{
 	  size_t numThreads;
           double *tempagents;
           double *waypoints;
+          char *reached;
           cl_context context;
 
-          int size;
+          int sizeA, sizeW, sizeR;
  
           cl_command_queue command_queue;
  
           cl_mem agents_mem_obj;
           cl_mem waypoints_mem_obj;
+          cl_mem reached_mem_obj;
           cl_program program;
           cl_platform_id platform_id;
           cl_device_id device_id;   

@@ -8,25 +8,28 @@
 
 const char *kernelsource = "                                               \
   __kernel void go(__global double *agents,                                \
-                   __global double *waypoints) {                           \
-    int i = get_global_id(0) * 3;                                          \
-    double waypointX = waypoints[i] - agents[i];                           \
-    double waypointY = waypoints[i+1] - agents[i+1];                       \
+                   __global double *waypoints,                             \
+                   __global char *reached) {                               \
+    int i = get_global_id(0);                                              \
+    int iA = i * 2;                                                        \
+    int iW = i * 3;                                                        \
+    double waypointX = waypoints[iW] - agents[iA];                         \
+    double waypointY = waypoints[iW+1] - agents[iA+1];                     \
     double length = sqrt(waypointX*waypointX + waypointY*waypointY);       \
-    if(length < waypoints[i+2]) {                                          \
-        agents[i+2] = 1;                                                   \
+    if(length < waypoints[iW+2]) {                                         \
+        reached[i] = 1;                                                    \
     } else {                                                               \
-        agents[i+2] = 0;                                                   \
+        reached[i] = 0;                                                    \
     }                                                                      \
-    if(length == .0) { \
-        waypointX = 0; \
-        waypointY = 0; \
-    } else { \
-        waypointX /= length;                                                   \
-        waypointY /= length;                                                   \
-    } \
-    agents[i] = round(agents[i] + waypointX);                              \
-    agents[i+1] = round(agents[i+1] + waypointY);                          \
+    if(length == .0) {                                                     \
+        waypointX = 0;                                                     \
+        waypointY = 0;                                                     \
+    } else {                                                               \
+        waypointX /= length;                                               \
+        waypointY /= length;                                               \
+    }                                                                      \
+    agents[iA] = round(agents[iA] + waypointX);                            \
+    agents[iA+1] = round(agents[iA+1] + waypointY);                        \
   }";
 
 void Ped::Model::setup(vector<Ped::Tagent*> agentsInScenario, IMPLEMENTATION impl)
@@ -38,21 +41,22 @@ void Ped::Model::setup(vector<Ped::Tagent*> agentsInScenario, IMPLEMENTATION imp
         size_t length = agents.size();
 
         // tempagentsX = new double[length];
-        tempagents = new double[length*3];
+        tempagents = new double[length*2];
         waypoints = new double[length*3];
+        reached = new char[length];
         //waypointY = new double[length];
         // waypointR = new double[length];
         //waypointRad = new bool[length];
-        size_t ind = 0;
+        size_t indA, indW;
         for(int i = 0; i < length; i++) {
-          ind = i*3;
-          agents[i]->destination = agents[i]->getNextDestination();
-          tempagents[ind] = agents[i]->getX();
-          tempagents[ind+1] = agents[i]->getY();
-          tempagents[ind+2] = .0;
-          waypoints[ind] = agents[i]->destination->getx();
-          waypoints[ind+1] = agents[i]->destination->gety();
-          waypoints[ind+2] = agents[i]->destination->getr();
+            indA = i*2;
+            indW = i*3;
+            agents[i]->destination = agents[i]->getNextDestination();
+            tempagents[indA] = agents[i]->getX();
+            tempagents[indA+1] = agents[i]->getY();
+            waypoints[indW] = agents[i]->destination->getx();
+            waypoints[indW+1] = agents[i]->destination->gety();
+            waypoints[indW+2] = agents[i]->destination->getr();
             // tempagentsX[i] = agents[i]->getX();
             // tempagentsY[i] = agents[i]->getY();
             // agents[i]->destination = agents[i]->getNextDestination();
@@ -60,10 +64,12 @@ void Ped::Model::setup(vector<Ped::Tagent*> agentsInScenario, IMPLEMENTATION imp
             // waypointY[i] = agents[i]->destination->gety();
             // waypointR[i] = agents[i]->destination->getr();
         }
-        
-        size = length * sizeof(double) * 3;
+
+        sizeA = length * sizeof(double) * 2;
+        sizeW = length * sizeof(double) * 3;
+        sizeR = length * sizeof(char);
         global_item_size = length;
-        local_item_size = 100;
+        //local_item_size = 100;
         
         platform_id = NULL;
         device_id = NULL;
@@ -76,13 +82,15 @@ void Ped::Model::setup(vector<Ped::Tagent*> agentsInScenario, IMPLEMENTATION imp
  
         // agentX_mem_obj = clCreateBuffer(context, CL_MEM_READ_WRITE, size, NULL, &ret);
         // agentY_mem_obj = clCreateBuffer(context, CL_MEM_READ_WRITE, size, NULL, &ret);
-        agents_mem_obj = clCreateBuffer(context, CL_MEM_READ_WRITE, size, NULL, &ret);
-        waypoints_mem_obj = clCreateBuffer(context, CL_MEM_READ_ONLY, size, NULL, &ret);
+        agents_mem_obj = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeA, NULL, &ret);
+        waypoints_mem_obj = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeW, NULL, &ret);
+        reached_mem_obj = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeR, NULL, &ret);
 
         // ret = clEnqueueWriteBuffer(command_queue, agentX_mem_obj, CL_TRUE, 0, size, tempagentsX, 0, NULL, NULL);
         // ret = clEnqueueWriteBuffer(command_queue, agentY_mem_obj, CL_TRUE, 0, size, tempagentsY, 0, NULL, NULL);
-        ret = clEnqueueWriteBuffer(command_queue, agents_mem_obj, CL_TRUE, 0, size, tempagents, 0, NULL, NULL);
-        ret = clEnqueueWriteBuffer(command_queue, waypoints_mem_obj, CL_TRUE, 0, size, waypoints, 0, NULL, NULL);
+        ret = clEnqueueWriteBuffer(command_queue, agents_mem_obj, CL_TRUE, 0, sizeA, tempagents, 0, NULL, NULL);
+        ret = clEnqueueWriteBuffer(command_queue, waypoints_mem_obj, CL_TRUE, 0, sizeW, waypoints, 0, NULL, NULL);
+        //ret = clEnqueueWriteBuffer(command_queue, reached_mem_obj, CL_TRUE, 0, sizeR, reached, 0, NULL, NULL);
 
         program = clCreateProgramWithSource(context, 1, (const char **)&kernelsource, NULL, &ret);
 
@@ -95,6 +103,7 @@ void Ped::Model::setup(vector<Ped::Tagent*> agentsInScenario, IMPLEMENTATION imp
 
         ret = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&agents_mem_obj);
         ret = clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *)&waypoints_mem_obj);
+        ret = clSetKernelArg(kernel, 2, sizeof(cl_mem), (void *)&reached_mem_obj);
     }
 }
 
@@ -145,7 +154,6 @@ void Ped::Model::tick() {
             agents[i]->whereToGo();
             agents[i]->go();
         }
-        //std::cout << "ost " << agents[1]->getX() << "," << agents[1]->getY() << std::endl;
         break;
     case OMP:
         omp_set_dynamic(0);
@@ -154,6 +162,7 @@ void Ped::Model::tick() {
         for(int i = 0; i < length; i++) {
             agents[i]->whereToGo();
             agents[i]->go();
+            
         }
         break;
     case PTHREAD:
@@ -173,33 +182,34 @@ void Ped::Model::tick() {
             pthread_join(threads[i], &status);
         break;
     case OPENCL:
-        ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_item_size, &local_item_size, 0, NULL, NULL);
+        ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_item_size, NULL /*&local_item_size*/, 0, NULL, NULL);
 
         ret =  clFinish(command_queue);
 
         // ret = clEnqueueReadBuffer(command_queue, agentX_mem_obj, CL_TRUE, 0, size, tempagentsX, 0, NULL, NULL);
         // ret = clEnqueueReadBuffer(command_queue, agentY_mem_obj, CL_TRUE, 0, size, tempagentsY, 0, NULL, NULL);
-        ret = clEnqueueReadBuffer(command_queue, agents_mem_obj, CL_TRUE, 0, size, tempagents, 0, NULL, NULL);
+        ret = clEnqueueReadBuffer(command_queue, agents_mem_obj, CL_TRUE, 0, sizeA, tempagents, 0, NULL, NULL);
+        ret = clEnqueueReadBuffer(command_queue, reached_mem_obj, CL_TRUE, 0, sizeR, reached, 0, NULL, NULL);
 
         bool update;
-        size_t ind;
-        // std::cout << "ost " << tempagentsX[1] << "," << tempagentsY[1] << std::endl;
+        size_t indA, indW;
         for(unsigned int i = 0; i < length; i++) {
-          ind = i * 3;
-            agents[i]->setX(tempagents[ind]);
-            agents[i]->setY(tempagents[ind+1]);
-            if(agents[ind+2] != 0) {
+            indA = i * 2;
+            indW = i * 3;
+            agents[i]->setX(tempagents[indA]);
+            agents[i]->setY(tempagents[indA+1]);
+            if(reached[i] != 0) {
                 agents[i]->waypoints.push_back(agents[i]->destination);
                 agents[i]->destination = agents[i]->getNextWaypoint();
 
-                waypoints[ind] = agents[i]->destination->getx();
-                waypoints[ind+1] = agents[i]->destination->gety();
-                waypoints[ind+2] = agents[i]->destination->getr();
+                waypoints[indW] = agents[i]->destination->getx();
+                waypoints[indW+1] = agents[i]->destination->gety();
+                waypoints[indW+2] = agents[i]->destination->getr();
                 update = true;
             }
         }
         if(update) {
-            ret = clEnqueueWriteBuffer(command_queue, waypoints_mem_obj, CL_TRUE, 0, size, waypoints, 0, NULL, NULL);
+            ret = clEnqueueWriteBuffer(command_queue, waypoints_mem_obj, CL_TRUE, 0, sizeW, waypoints, 0, NULL, NULL);
         }
         break;
     }
