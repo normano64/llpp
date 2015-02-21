@@ -1,0 +1,73 @@
+make -C libpedsim
+make[1]: Entering directory `/home/senilica/llpp/lab2/libpedsim'
+Makefile:25: Warning: Compiling without nvcc support. Compilation will proceed but CUDA code will not be included.
+g++ -lOpenCL -msse -msse2 -msse4.1 -msse4.2 -lpthread -fopenmp -g -O3 -fno-inline -fPIC  -c ped_gagent.cpp -o ped_agent.cxx.o 
+ped_agent.cpp: In member function ‘void Ped::Tagent::init(int, int)’:
+ped_agent.cpp:36:14: error: ‘class Ped::Tvector’ has no member named ‘xyz’
+     position.xyz[0] = posX;
+              ^
+ped_agent.cpp:37:14: error: ‘class Ped::Tvector’ has no member named ‘xyz’
+     position.xyz[1] = posY;
+              ^
+ped_agent.cpp: In member function ‘void Ped::Tagent::go()’:
+ped_agent.cpp:46:45: error: ‘class Ped::Tvector’ has no member named ‘xyz’
+         __m128d vec1 = _mm_load_pd(position.xyz);
+                                             ^
+ped_agent.cpp:47:46: error: ‘class Ped::Tvector’ has no member named ‘xyz’
+         __m128d vec2 = _mm_load_pd(moveForce.xyz);
+                                              ^
+ped_agent.cpp:50:31: error: ‘class Ped::Tvector’ has no member named ‘xyz’
+         _mm_store_pd(position.xyz, vec1);
+                               ^
+ped_agent.cpp:53:18: error: ‘class Ped::Tvector’ has no member named ‘xyz’
+         position.xyz[0] = round(position.xyz[0] + moveForce.xyz[0]);
+                  ^
+ped_agent.cpp:53:42: error: ‘class Ped::Tvector’ has no member named ‘xyz’
+         position.xyz[0] = round(position.xyz[0] + moveForce.xyz[0]);
+                                          ^
+ped_agent.cpp:53:61: error: ‘class Ped::Tvector’ has no member named ‘xyz’
+         position.xyz[0] = round(position.xyz[0] + moveForce.xyz[0]);
+                                                             ^
+ped_agent.cpp:54:18: error: ‘class Ped::Tvector’ has no member named ‘xyz’
+         position.xyz[1] = round(position.xyz[1] + moveForce.xyz[1]);
+                  ^
+ped_agent.cpp:54:42: error: ‘class Ped::Tvector’ has no member named ‘xyz’
+         position.xyz[1] = round(position.xyz[1] + moveForce.xyz[1]);
+                                          ^
+ped_agent.cpp:54:61: error: ‘class Ped::Tvector’ has no member named ‘xyz’
+         position.xyz[1] = round(position.xyz[1] + moveForce.xyz[1]);
+                                                             ^
+ped_agent.cpp: In member function ‘void Ped::Tagent::whereToGo()’:
+ped_agent.cpp:95:45: error: no matching function for call to ‘Ped::Tvector::Tvector(int, int, int)’
+         waypointForce = Ped::Tvector(0, 0, 0);
+                                             ^
+ped_agent.cpp:95:45: note: candidates are:
+In file included from ped_agent.h:18:0,
+                 from ped_agent.cpp:8:
+ped_vector.h:29:9: note: Ped::Tvector::Tvector(double, double)
+         Tvector(double px, double py) {
+         ^
+ped_vector.h:29:9: note:   candidate expects 2 arguments, 3 provided
+ped_vector.h:25:9: note: Ped::Tvector::Tvector()
+         Tvector();
+         ^
+ped_vector.h:25:9: note:   candidate expects 0 arguments, 3 provided
+ped_vector.h:22:21: note: Ped::Tvector::Tvector(const Ped::Tvector&)
+     class LIBEXPORT Tvector {
+                     ^
+ped_vector.h:22:21: note:   candidate expects 1 argument, 3 provided
+ped_agent.cpp:104:55: error: ‘class Ped::Tvector’ has no member named ‘xyz’
+         direction = tempDestination.getForce(position.xyz[0], position.xyz[1], 0, 0, &reachesDestination);
+                                                       ^
+ped_agent.cpp:104:72: error: ‘class Ped::Tvector’ has no member named ‘xyz’
+         direction = tempDestination.getForce(position.xyz[0], position.xyz[1], 0, 0, &reachesDestination);
+                                                                        ^
+ped_agent.cpp:107:52: error: ‘class Ped::Tvector’ has no member named ‘xyz’
+         direction = destination->getForce(position.xyz[0], position.xyz[1],lastDestination->getx(),lastDestination->gety(),&reachesDestination);
+                                                    ^
+ped_agent.cpp:107:69: error: ‘class Ped::Tvector’ has no member named ‘xyz’
+         direction = destination->getForce(position.xyz[0], position.xyz[1],lastDestination->getx(),lastDestination->gety(),&reachesDestination);
+                                                                     ^
+make[1]: *** [ped_agent.cxx.o] Error 1
+make[1]: Leaving directory `/home/senilica/llpp/lab2/libpedsim'
+make: *** [libpedsim/libpedsim.so] Error 2

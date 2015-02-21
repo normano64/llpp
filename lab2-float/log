@@ -1,0 +1,19 @@
+make -C libpedsim
+make[1]: Entering directory `/home/senilica/llpp/lab2-float/libpedsim'
+Makefile:25: Warning: Compiling without nvcc support. Compilation will proceed but CUDA code will not be included.
+make[1]: `libpedsim.so' is up to date.
+make[1]: Leaving directory `/home/senilica/llpp/lab2-float/libpedsim'
+ln -fs ../libpedsim/libpedsim.so demo/libpedsim.so
+cd demo; qmake "LIB=" 
+make -C demo
+make[1]: Entering directory `/home/senilica/llpp/lab2-float/demo'
+cd src/ && make -f Makefile 
+make[2]: Entering directory `/home/senilica/llpp/lab2-float/demo/src'
+g++ -m64 -Wl,-O1 -o ../demo main.o MainWindow.o ParseScenario.o ViewAgent.o Timer.o moc_ParseScenario.o moc_Timer.o    -L/usr/lib/x86_64-linux-gnu -L/usr/X11R6/lib64 -L../../libpedsim -lpedsim -L/opt/AMDAPPSDK-3.0-0-Beta/libs/x86_64 -lOpenCL -lQtOpenGL -lQtGui -lQtCore -lGL -lpthread 
+../../libpedsim/libpedsim.so: undefined reference to `operator*(double, Ped::Tvector const&)'
+collect2: error: ld returned 1 exit status
+make[2]: *** [../demo] Error 1
+make[2]: Leaving directory `/home/senilica/llpp/lab2-float/demo/src'
+make[1]: *** [sub-src-make_default] Error 2
+make[1]: Leaving directory `/home/senilica/llpp/lab2-float/demo'
+make: *** [demo/demo] Error 2

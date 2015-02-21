@@ -1,0 +1,75 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[british]{babel}
+\usepackage{fullpage}
+\usepackage{amsmath,amssymb}
+\usepackage{multirow}
+\usepackage{caption}
+\usepackage{tikz,pgfplots}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\title{\textbf{Low-level Parallel Programming (course 1DL550) \\
+    Uppsala University -- Spring 2015 \\
+    Report for Lab 2 by Team 14}}
+\author{Fredrik Larsson \and Jimmy Holm \and Per Bergqwist}
+\date{\today}
+\begin{document}
+\maketitle
+\section{Plot}
+\begin{center}
+  \pgfplotsset{grid style={dotted,gray}}
+  \begin{tikzpicture}
+    \begin{axis}[
+        width=0.8\textwidth,
+        height=0.6\textwidth,
+        xtick={2,...,14},
+        xmin=2,
+        xmax=14,
+        ymin=0,
+        grid=both,
+        legend entries={\small{},\small{}},
+        xlabel={\small{}},
+        ylabel={\small{}}
+      ]
+      \addplot coordinates{
+      }
+      \addplot coordinates{
+      }
+      \draw (axis cs:2,1) -- (axis cs:14,1);
+    \end{axis}
+  \end{tikzpicture}
+\end{center}
+
+\section{System specification}
+
+\section{Questions}
+\begin{enumerate}[label=\Alph*.]
+\item \textbf{What kind of parallelism is exposed with your code refactorization?}\\
+
+\item \textbf{Give a short summary of similarities and differences between SIMD and CUDA.}\\
+
+\item \textbf{Which parallelization has been most beneficial in these two labs? Support your case using plotted time measurements.}\\ 
+
+\item \textbf{What kind of code transformations were required for this lab, and why were they needed?}\\
+
+\item \textbf{Compare the effort required for each of the four parallellization techniques. Would it have made a difference if you had to build the program from scratch, instead of using given code?}\\
+
+\end{enumerate}
+\section{How to run}
+The demo runs with a GUI and using the sequential implementation
+if no flag has overwritten the settings. The following flags can be
+used to alter the demo and change the implementation for the tick
+function.
+\begin{itemize}[label=,leftmargin=0pt]
+\item \textbf{-\--timing-mode} - Without gui.
+\item \textbf{-\--pthread} - Executes the PThread implementation.
+\item \textbf{-\--omp} - Executes the OpenMP implementation.
+\item \textbf{-\--cude} - Executes the CUDA implementation.
+\item \textbf{-\--simd} - Executes the SIMD implementation·
+\item \textbf{-\--threads \textit{number}} - Tells the demo to use
+  \textit{number} threads when executing.
+
+\item \textbf{-\--silent} - Does not print to standard output.
+\item \textbf{-\--plot} - Stores the timing data to the file testdata.txt
+\end{itemize}
+\end{document}
