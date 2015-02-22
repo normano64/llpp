@@ -92,10 +92,14 @@ void Ped::Model::setup(vector<Ped::Tagent*> agentsInScenario, IMPLEMENTATION imp
         //ret = clEnqueueWriteBuffer(command_queue, reached_mem_obj, CL_TRUE, 0, sizeR, reached, 0, NULL, NULL);
 
         program = clCreateProgramWithSource(context, 1, (const char **)&kernelsource, NULL, &ret);
-
+		if(ret != CL_SUCCESS)
+		{
+		  std::cout << "Creat Program error: " << ret << std::endl;
+		}
+		
         ret = clBuildProgram(program, 1, &device_id, NULL, NULL, NULL);
         if(ret != CL_SUCCESS) {
-            std::cout << "error: " << ret << std::endl;
+            std::cout << "Build error: " << ret << std::endl;
         }
 
         kernel = clCreateKernel(program, "go", &ret);
