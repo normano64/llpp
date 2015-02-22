@@ -26,10 +26,9 @@ namespace Ped {
 
         // Initializing constructor
 
-        Tvector(double px, double py, double pz = .0) {
+        Tvector(double px, double py) {
             xyz[0] = px;
             xyz[1] = py;
-            xyz[2] = pz;
         };
 
         // Methods
@@ -51,7 +50,6 @@ namespace Ped {
 
         static double scalar(const Tvector &a, const Tvector &b);
         static double dotProduct(const Tvector &a, const Tvector &b);
-        static Tvector crossProduct(const Tvector &a, const Tvector &b);
 
         std::string to_string() const;
 
@@ -68,14 +66,12 @@ namespace Ped {
 
         // Attributes
 
-        double xyz[3] __attribute__((aligned(16)));
+        double xyz[2] __attribute__((aligned(16)));
 
         inline double getX() const { return xyz[0]; }
         inline double getY() const { return xyz[1]; }
-        inline double getZ() const { return xyz[2]; }
         void setX(double x) { xyz[0] = x;}
         void setY(double y) { xyz[1] = y;}
-        void setZ(double z) { xyz[2] = z;}
         static bool VEC;
     };
 }

@@ -88,7 +88,7 @@ void Ped::Tagent::whereToGo() {
 
     if (destination == NULL) {
         // Don't move, if nowhere to go
-        waypointForce = Ped::Tvector(0, 0, 0);
+        waypointForce = Ped::Tvector(0, 0);
     }
 
     bool reachesDestination = false; // if agent reaches destination in n
