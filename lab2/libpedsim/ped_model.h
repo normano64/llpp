@@ -23,6 +23,7 @@ namespace Ped{
           cl_context context;
 
           int sizeA, sizeW, sizeR;
+          size_t indA, indW;
  
           cl_command_queue command_queue;
  

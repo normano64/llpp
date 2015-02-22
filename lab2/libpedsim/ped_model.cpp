@@ -47,7 +47,6 @@ void Ped::Model::setup(vector<Ped::Tagent*> agentsInScenario, IMPLEMENTATION imp
         //waypointY = new double[length];
         // waypointR = new double[length];
         //waypointRad = new bool[length];
-        size_t indA, indW;
         for(int i = 0; i < length; i++) {
             indA = i*2;
             indW = i*3;
@@ -88,8 +87,8 @@ void Ped::Model::setup(vector<Ped::Tagent*> agentsInScenario, IMPLEMENTATION imp
 
         // ret = clEnqueueWriteBuffer(command_queue, agentX_mem_obj, CL_TRUE, 0, size, tempagentsX, 0, NULL, NULL);
         // ret = clEnqueueWriteBuffer(command_queue, agentY_mem_obj, CL_TRUE, 0, size, tempagentsY, 0, NULL, NULL);
-        ret = clEnqueueWriteBuffer(command_queue, agents_mem_obj, CL_TRUE, 0, sizeA, tempagents, 0, NULL, NULL);
-        ret = clEnqueueWriteBuffer(command_queue, waypoints_mem_obj, CL_TRUE, 0, sizeW, waypoints, 0, NULL, NULL);
+        ret = clEnqueueWriteBuffer(command_queue, agents_mem_obj, CL_FALSE, 0, sizeA, tempagents, 0, NULL, NULL);
+        ret = clEnqueueWriteBuffer(command_queue, waypoints_mem_obj, CL_FALSE, 0, sizeW, waypoints, 0, NULL, NULL);
         //ret = clEnqueueWriteBuffer(command_queue, reached_mem_obj, CL_TRUE, 0, sizeR, reached, 0, NULL, NULL);
 
         program = clCreateProgramWithSource(context, 1, (const char **)&kernelsource, NULL, &ret);
@@ -162,7 +161,6 @@ void Ped::Model::tick() {
         for(int i = 0; i < length; i++) {
             agents[i]->whereToGo();
             agents[i]->go();
-            
         }
         break;
     case PTHREAD:
@@ -182,17 +180,20 @@ void Ped::Model::tick() {
             pthread_join(threads[i], &status);
         break;
     case OPENCL:
+        ret =  clFinish(command_queue);
+        
         ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_item_size, NULL /*&local_item_size*/, 0, NULL, NULL);
 
         ret =  clFinish(command_queue);
 
         // ret = clEnqueueReadBuffer(command_queue, agentX_mem_obj, CL_TRUE, 0, size, tempagentsX, 0, NULL, NULL);
         // ret = clEnqueueReadBuffer(command_queue, agentY_mem_obj, CL_TRUE, 0, size, tempagentsY, 0, NULL, NULL);
-        ret = clEnqueueReadBuffer(command_queue, agents_mem_obj, CL_TRUE, 0, sizeA, tempagents, 0, NULL, NULL);
-        ret = clEnqueueReadBuffer(command_queue, reached_mem_obj, CL_TRUE, 0, sizeR, reached, 0, NULL, NULL);
+        ret = clEnqueueReadBuffer(command_queue, agents_mem_obj, CL_FALSE, 0, sizeA, tempagents, 0, NULL, NULL);
+        ret = clEnqueueReadBuffer(command_queue, reached_mem_obj, CL_FALSE, 0, sizeR, reached, 0, NULL, NULL);
 
+        ret =  clFinish(command_queue);
+        
         bool update;
-        size_t indA, indW;
         for(unsigned int i = 0; i < length; i++) {
             indA = i * 2;
             indW = i * 3;
@@ -209,7 +210,7 @@ void Ped::Model::tick() {
             }
         }
         if(update) {
-            ret = clEnqueueWriteBuffer(command_queue, waypoints_mem_obj, CL_TRUE, 0, sizeW, waypoints, 0, NULL, NULL);
+            ret = clEnqueueWriteBuffer(command_queue, waypoints_mem_obj, CL_FALSE, 0, sizeW, waypoints, 0, NULL, NULL);
         }
         break;
     }
