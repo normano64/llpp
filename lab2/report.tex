@@ -22,37 +22,119 @@
     \begin{axis}[
         width=0.8\textwidth,
         height=0.6\textwidth,
-        xtick={2,...,14},
-        xmin=2,
-        xmax=14,
+        xtick={1,...,8},
+        xmin=1,
+        xmax=8,
         ymin=0,
+        ymax=1.4,
         grid=both,
-        legend entries={\small{},\small{}},
-        xlabel={\small{}},
-        ylabel={\small{}}
+        legend style={at={(1.35,1)},anchor=north east},
+        legend entries={
+          \footnotesize{PThreads},
+          \footnotesize{PThreads SIMD},
+          \footnotesize{OpenMP},
+          \footnotesize{OpenMP SIMD},
+          \footnotesize{OpenCL},
+          \footnotesize{Seq SIMD}
+        },
+        xlabel={\small Number of threads},
+        ylabel={\small Time (Fraction of sequential time)}
       ]
-      \addplot coordinates{
-      }
-      \addplot coordinates{
-      }
-      \draw (axis cs:2,1) -- (axis cs:14,1);
+      %% pthreads
+      \addplot[color=orange,mark=square*] coordinates{ 
+        (2,0.670761)
+        (3,0.532961)
+        (4,0.525924)
+        (5,0.987585)
+        (6,1.4298)
+        (7,1.79937)
+        (8,2.53649)
+      };
+      %% pthreads simd
+      \addplot[color=teal,mark=square*] coordinates{
+        (2,0.524508)
+        (3,0.438931)
+        (4,0.455362)
+        (5,0.537963)
+        (6,2.06762)
+        (7,2.17634)
+        (8,2.58632)
+      };
+      %% omp
+      \addplot[densely dashed,color=orange,mark=*] coordinates{
+        (2,0.500571)
+        (3,0.341903)
+        (4,0.270854)
+        (5,0.289564)
+        (6,0.249752)
+        (7,0.224232)
+        (8,0.233913)
+      };
+      %% omp simd
+      \addplot[densely dashed,color=teal,mark=*] coordinates{
+        (2,0.368598)
+        (3,0.255877)
+        (4,0.200408)
+        (5,0.237889)
+        (6,0.2038)
+        (7,0.184117)
+        (8,0.191882)
+      };
+      %% opencl
+      \addplot[color=cyan,mark=x] coordinates{
+        (1,0.918157)
+        (2,0.918157)
+        (3,0.918157)
+        (4,0.918157)
+        (5,0.918157)
+        (6,0.918157)
+        (7,0.918157)
+        (8,0.918157)
+      };
+      %% simd
+      \addplot[color=purple,mark=x] coordinates{
+        (1,0.70859)
+        (2,0.70859)
+        (3,0.70859)
+        (4,0.70859)
+        (5,0.70859)
+        (6,0.70859)
+        (7,0.70859)
+        (8,0.70859)
+      };
+      \draw (axis cs:1,1) -- (axis cs:14,1);
+      %% \draw (axis cs:2,0.944114) -- (axis cs:14,0.944114);
+      %% \draw (axis cs:2,0.722371) -- (axis cs:14,0.722371);
     \end{axis}
   \end{tikzpicture}
 \end{center}
 
 \section{System specification}
-
+The CPU of the system used for gathering the data presented was an
+Intel i7 2600k running at a frequency of 4GHz. The system was able to
+use four cores with Hyper-threading enabled, meaning a possibility of
+using eight logical cores simultaneously with the drawback that the
+performance gain from using more than four cores varies depending on
+the tasks. To collect the data for OpenCL an AMD HD7970 GPU with 3GB
+of memory was used running with the standard clock of 925MHz.
 \section{Questions}
 \begin{enumerate}[label=\Alph*.]
-\item \textbf{What kind of parallelism is exposed with your code refactorization?}\\
+\item \textbf{What kind of parallelism is exposed with your code
+  refactorization?}\\
 
-\item \textbf{Give a short summary of similarities and differences between SIMD and CUDA.}\\
+\item \textbf{Give a short summary of similarities and differences
+  between SIMD and CUDA.}\\
 
-\item \textbf{Which parallelization has been most beneficial in these two labs? Support your case using plotted time measurements.}\\ 
+\item \textbf{Which parallelization has been most beneficial in these
+  two labs? Support your case using plotted time measurements.}\\
 
-\item \textbf{What kind of code transformations were required for this lab, and why were they needed?}\\
+\item \textbf{What kind of code transformations were required for this
+  lab, and why were they needed?}\\
 
-\item \textbf{Compare the effort required for each of the four parallellization techniques. Would it have made a difference if you had to build the program from scratch, instead of using given code?}\\
+\item \textbf{Compare the effort required for each of the four
+  parallellization techniques. Would it have made a difference if you
+  had to build the program from scratch, instead of using given
+  code?}\\
 
 \end{enumerate}
 \section{How to run}
@@ -62,14 +144,15 @@ used to alter the demo and change the implementation for the tick
 function.
 \begin{itemize}[label=,leftmargin=0pt]
 \item \textbf{-\--timing-mode} - Without gui.
-\item \textbf{-\--pthread} - Executes the PThread implementation.
+\item \textbf{-\--pthreads} - Executes the PThreads implementation.
 \item \textbf{-\--omp} - Executes the OpenMP implementation.
-\item \textbf{-\--cude} - Executes the CUDA implementation.
-\item \textbf{-\--simd} - Executes the SIMD implementation·
+\item \textbf{-\--opencl} - Executes the OpenCL implementation.
+\item \textbf{-\--simd} - Executes the SIMD implementation, can be
+  combined with either omp or pthreads.
 \item \textbf{-\--threads \textit{number}} - Tells the demo to use
   \textit{number} threads when executing.
-
 \item \textbf{-\--silent} - Does not print to standard output.
-\item \textbf{-\--plot} - Stores the timing data to the file testdata.txt
+\item \textbf{-\--plot} - Stores the timing data to the file
+  testdata.txt
 \end{itemize}
 \end{document}
