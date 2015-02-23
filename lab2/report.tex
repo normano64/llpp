@@ -187,21 +187,23 @@ of memory was used running with the standard clock of 925MHz.
 \begin{enumerate}[label=\Alph*.]
 \item \textbf{What kind of parallelism is exposed with your code
   refactorization?}\\
-
+  The parallelism exposed is that of data parallelism, where multiple workers access different part of the agent and waypoint data simultaneously.
 \item \textbf{Give a short summary of similarities and differences
-  between SIMD and CUDA.}\\
+  between SIMD and OpenCL.}\\
 
 \item \textbf{Which parallelization has been most beneficial in these
   two labs? Support your case using plotted time measurements.}\\
+  As shown in Figure 1, the mix of using SIMD calls together with OpenMP parallelism provides a significant increase in performance over every other form of optimization and even at its worst, OpenMP outperformed every other implementation tried.
 
 \item \textbf{What kind of code transformations were required for this
   lab, and why were they needed?}\\
+  For the lab, we first of all went through the codebase, restructuring and making more efficient the various function calls and rooting out unused member-variables to make it easier for us to find what work was actually being done. With this, we were able to write an OpenCL kernel that could perform the task imperatively, given a minimum amount of information. The vector class had an overhaul where the various functions were vectorized to increase performance and lower the required work used for normalization and similar efforts.
 
 \item \textbf{Compare the effort required for each of the four
   parallellization techniques. Would it have made a difference if you
   had to build the program from scratch, instead of using given
   code?}\\
-
+Making use of Pthreads and OpenMP required a rather small amount of code changes to outperform the sequential method, relying more on the number of worker threads than anything else to provide performance increase. However, adjusting the code to make good use of SIMD instructions and to use OpenCL effectively required a substantial amount of re-structuring and indeed for OpenCL the previous implementation was largely abandoned altogether and moved into a kernel program. If the program had been designed with this in mind from the start, it would no doubt have been easier to translate the idea into kernel.
 \end{enumerate}
 \section{How to run}
 The demo runs with a GUI and using the sequential implementation
