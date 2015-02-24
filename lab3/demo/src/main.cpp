@@ -1,4 +1,3 @@
-//#include "ped_agent.h"
 #include "ped_model.h"
 #include "MainWindow.h"
 #include "ParseScenario.h"
@@ -16,83 +15,95 @@
 #include <chrono>
 #include <ctime>
 #include <cstring>
+#include <fstream>
+
 #define SIMULATION_STEPS 1000000
-
-
+#define TICK_LIMIT 1000//0
+#define AS_FAST_AS_POSSIBLE 0
 
 int main(int argc, char*argv[]) { 
-  Ped::Model model;
-  bool timing_mode = 0;
-  int i = 1;
-  QString scenefile = "scenario.xml";
+    Ped::Model model;
+    bool timing_mode = 0;
+    bool silent = false;
+    bool plot = false;
+    int i = 1;
+    size_t threads = 4;
+    QString scenefile = "scenario.xml";
+    Ped::IMPLEMENTATION IMP = Ped::IMPLEMENTATION::SEQ;
 
-  // Argument handling
-  while(i < argc)
-    {
-      if(argv[i][0] == '-' && argv[i][1] == '-')
-	{
-	  if(strcmp(&argv[i][2],"timing-mode") == 0)
-	    {
-	      cout << "Timing mode on\n";
-	      timing_mode = true;
+    while(i < argc) {
+        if(argv[i][0] == '-' && argv[i][1] == '-') {
+            if(strcmp(&argv[i][2],"timing-mode") == 0) {
+                if(!silent) cout << "Timing mode on" << endl;
+                timing_mode = true;
+	    } else if(strcmp(&argv[i][2],"omp") == 0) {
+                IMP = Ped::IMPLEMENTATION::OMP;
+	    } else if(strcmp(&argv[i][2], "threads") == 0) {
+                i+=1;
+                threads = atoi((const char*) argv[i]);
+            } else if(strcmp(&argv[i][2], "silent") == 0) {
+                silent = true;
+            } else if(strcmp(&argv[i][2], "plot") == 0) {
+                plot = true;
+            } else {
+                cerr << "Unrecognized command: \"" << argv[i] << "\". Ignoring ..." << endl;
 	    }
-	  else
-	    {
-	      cerr << "Unrecognized command: \"" << argv[i] << "\". Ignoring ..." << endl;
-	    }
+	} else {
+            scenefile = argv[i];
 	}
-      else // Assume it is a path to scenefile
-	{
-	  scenefile = argv[i];
-	}
-      i+=1;
+        i+=1;
     }
-  ParseScenario parser(scenefile);
-  model.setup(parser.getAgents());
+    if(!silent) {
+        cout << "Running using ";
+        switch(IMP) {
+	case Ped::IMPLEMENTATION::SEQ:
+            cout << "sequential implementation" << endl;
+            break;
+	case Ped::IMPLEMENTATION::OMP:
+            cout << "OpenMP implementation (" << threads << " threads)" << endl;
+            break;
+        }
+    }
+    ParseScenario parser(scenefile);
+    model.setup(parser.getAgents(),IMP);
 
-  QApplication app(argc, argv);
+    QApplication app(argc, argv);
   
-  MainWindow mainwindow(model);
+    MainWindow mainwindow(model);
 
-
-  
-
-  const int delay_ms = 16;
-  Timer *timer;
-#define TICK_LIMIT 1000//0
-  #define AS_FAST_AS_POSSIBLE 0
-  if(timing_mode)
-    {
-      timer = new Timer(model,mainwindow,AS_FAST_AS_POSSIBLE);
-      timer->setTickLimit(TICK_LIMIT);
+    const int delay_ms = 16;
+    Timer *timer;
+    if(timing_mode) {
+        timer = new Timer(model,mainwindow,AS_FAST_AS_POSSIBLE);
+        timer->setTickLimit(TICK_LIMIT);
+    } else {
+        timer = new Timer(model,mainwindow,delay_ms);
+        mainwindow.show();
     }
-  else
-    {
-      timer = new Timer(model,mainwindow,delay_ms);
-      mainwindow.show();
+    if(!silent) cout << "Demo setup complete, running ..." << endl;
+    int retval = 0;
+    std::chrono::time_point<std::chrono::system_clock> start,stop;
+    start = std::chrono::system_clock::now();
 
+    if(timing_mode) {
+        timer->busyTick();
+    } else {
+        timer->qtTimerTick();
+        retval = app.exec();
     }
-  cout << "Demo setup complete, running ..." << endl;
-  int retval = 0;
-  std::chrono::time_point<std::chrono::system_clock> start,stop;
-  start = std::chrono::system_clock::now();
 
-  // If timing mode, just go as fast as possible without delays or graphical updates
-  if(timing_mode)
-  {
-    timer->busyTick();
-  }
-  else
-  {
-    timer->qtTimerTick();
-    retval = app.exec();
-  }
+    stop = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = stop-start;
+    if(!silent) cout << "Time: " << elapsed_seconds.count() << " seconds." << endl;
+    
+    if(plot) {
+      fstream file;
+      file.open("./testdata.txt", std::fstream::out | std::fstream::app);
+      file << ((IMP == Ped::IMPLEMENTATION::OMP) ? "OpenMP  " : "Sequential") << "\t" << threads << "\t" << elapsed_seconds.count() << endl;
+      file.close();
+    }
 
-  stop = std::chrono::system_clock::now();
-  std::chrono::duration<double> elapsed_seconds = stop-start;
-  cout << "Time: " << elapsed_seconds.count() << " seconds." << endl;
-
-  cout << "Done" << endl;
-  delete (timer);
-  return retval;
+    if(!silent) cout << "Done" << endl;
+    delete (timer);
+    return retval;
 }
