@@ -28,13 +28,17 @@ namespace Ped{
     // Cleans up the tree and restructures it. Worth calling every now and then.
     void cleanup();
     ~Model();
+
+    void setNumThreads(size_t threads) { numThreads = threads; }
     
   private:
     IMPLEMENTATION implementation;   
     std::vector<Tagent*> agents;
     void doSafeMovement( Ped::Tagent *agent);
     // The maximum quadtree depth
-    static const int treeDepth = 10;    
+    static const int treeDepth = 10;
+
+    size_t numThreads;
 
     // Keeps track of the positions of each agent
     Ped::Ttree *tree;

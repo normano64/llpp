@@ -46,7 +46,7 @@ namespace Ped {
     void setY(int y) {position.y = y;}
 
     // Computes forces that determine the next position
-    void whereToGo();
+    Tvector whereToGo();
 
     // Update the position according to computed forces
     void go();
@@ -87,16 +87,10 @@ namespace Ped {
 
     // The force towards the current destination
     Tvector waypointForce;
-
-   // Computes the forces that determine the next position
-    void computeForces();
     
     // Interntal init function 
     void init(int posX, int posY);
 
-    // Computing waypoint force and directions
-    Tvector computeWaypointForce();
-    Tvector computeDirection();
     Twaypoint* getNextDestination();
     Twaypoint* getNextWaypoint();
   };

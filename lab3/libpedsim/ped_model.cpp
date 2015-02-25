@@ -6,6 +6,8 @@
 #include <stack>
 #include <algorithm>
 
+#include <omp.h>
+
 // Comparator used to identify if two agents differ in their position
 bool cmp(Ped::Tagent *a, Ped::Tagent *b) {
     return (a->getX() < b->getX()) || ((a->getX() == b->getX()) && (a->getY() < b->getY()));
@@ -36,11 +38,30 @@ const std::vector<Ped::Tagent*> Ped::Model::getAgents() const {
 }
 
 void Ped::Model::tick() {
-    for (std::vector<Ped::Tagent*>::iterator it = agents.begin(); it != agents.end(); ++it) {
-        Ped::Tagent *agent = (*it);
-        agent->whereToGo();
-        agent->go();                 // This rather becomes a "computeNextDesiredPosition"
-        doSafeMovement(agent);
+    std::vector<Ped::Tagent*> agents = this->getAgents();
+    size_t length = agents.size();
+    numThreads = (numThreads < length) ? numThreads : length;
+    switch(implementation) {
+    case OMP:
+        omp_set_dynamic(0);
+        omp_set_num_threads(numThreads);
+        #pragma omp parallel for shared(agents) schedule(auto)
+        for (int i = 0; i < length; i++) {
+            agents.at(i)->whereToGo();
+            agents.at(i)->go();
+            #pragma omp critical
+            {
+                doSafeMovement(agents.at(i));
+            }
+        }
+        break;
+    default:
+        for (int i = 0; i < length; i++) {
+            agents.at(i)->whereToGo();
+            agents.at(i)->go();
+            doSafeMovement(agents.at(i));
+        }
+        break;
     }
 }
 

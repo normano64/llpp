@@ -56,11 +56,11 @@ int main(int argc, char*argv[]) {
     if(!silent) {
         cout << "Running using ";
         switch(IMP) {
-	case Ped::IMPLEMENTATION::SEQ:
-            cout << "sequential implementation" << endl;
-            break;
 	case Ped::IMPLEMENTATION::OMP:
             cout << "OpenMP implementation (" << threads << " threads)" << endl;
+            break;
+        default:
+            cout << "sequential implementation" << endl;
             break;
         }
     }
