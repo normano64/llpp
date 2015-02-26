@@ -29,8 +29,17 @@ void Ped::Model::setup(std::vector<Ped::Tagent*> agentsInScenario, IMPLEMENTATIO
     for (std::vector<Ped::Tagent*>::iterator it = agents.begin(); it != agents.end(); ++it) {
         tree->addAgent(*it);
     }
-  
+
+    length = agents.size();
+    
     implementation = imp;
+}
+
+void Ped::Model::setNumThreads(size_t threads) {
+  numThreads = threads;
+    numThreads = (numThreads < length) ? numThreads : length;
+    omp_set_dynamic(0);
+    omp_set_num_threads(numThreads);
 }
 
 const std::vector<Ped::Tagent*> Ped::Model::getAgents() const {
@@ -39,21 +48,19 @@ const std::vector<Ped::Tagent*> Ped::Model::getAgents() const {
 
 void Ped::Model::tick() {
     std::vector<Ped::Tagent*> agents = this->getAgents();
-    size_t length = agents.size();
-    numThreads = (numThreads < length) ? numThreads : length;
+    //cout << agents.size() << " ";
+    
     switch(implementation) {
     case OMP:
-        omp_set_dynamic(0);
-        omp_set_num_threads(numThreads);
-        #pragma omp parallel for shared(agents) schedule(auto)
+      #pragma omp parallel for shared(agents) schedule(auto)
         for (int i = 0; i < length; i++) {
             agents.at(i)->whereToGo();
-            agents.at(i)->go();
-            #pragma omp critical
-            {
-                doSafeMovement(agents.at(i));
-            }
+            agents.at(i)->go();  
         }
+        
+        for (int i = 0; i < length; i++) {
+          doSafeMovement(agents.at(i));
+        }                    
         break;
     default:
         for (int i = 0; i < length; i++) {
@@ -89,8 +96,7 @@ void  Ped::Model::doSafeMovement( Ped::Tagent *agent) {
         // Agent wants to walk straight to North, South, West or East
         p1 = std::make_pair(pDesired.first + diffY, pDesired.second + diffX);
         p2 = std::make_pair(pDesired.first - diffY, pDesired.second - diffX);
-    }
-    else {
+    } else {
         // Agent wants to walk diagonally
         p1 = std::make_pair(pDesired.first, agent->getY());
         p2 = std::make_pair(agent->getX(), pDesired.second);
@@ -157,10 +163,17 @@ void Ped::Model::getNeighbors(list<const Ped::Tagent*>& neighborList, int x, int
         if (t->isleaf) {
             t->getAgents(neighborList);
         } else {
-            if (t->tree1->intersects(x, y, dist)) treestack.push(t->tree1);
-            if (t->tree2->intersects(x, y, dist)) treestack.push(t->tree2);
-            if (t->tree3->intersects(x, y, dist)) treestack.push(t->tree3);
-            if (t->tree4->intersects(x, y, dist)) treestack.push(t->tree4);
+          #pragma omp critical
+          {
+            if (t->tree1->intersects(x, y, dist))
+              treestack.push(t->tree1);
+            if (t->tree2->intersects(x, y, dist))
+              treestack.push(t->tree2);
+            if (t->tree3->intersects(x, y, dist))
+              treestack.push(t->tree3);
+            if (t->tree4->intersects(x, y, dist))
+              treestack.push(t->tree4);
+          }
         }
     }
 }

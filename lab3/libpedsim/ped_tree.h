@@ -29,25 +29,27 @@ namespace Ped {
 
     public:
       Ttree(Ped::Ttree *root,std::map<const Ped::Tagent*, Ped::Ttree*> *treehash, int depth, int maxDepth, double x, double y, double w, double h);
-        virtual ~Ttree();
+      virtual ~Ttree();
+      
+      virtual void clear();
+      
+      virtual void addAgent(const Ped::Tagent *a);
+      virtual void moveAgent(const Ped::Tagent *a);
+      virtual bool removeAgent(const Ped::Tagent *a);
+      
+      virtual set<const Ped::Tagent*> getAgents() const;
+      virtual void getAgents(list<const Ped::Tagent*>& outputList) const;
+        
+      virtual bool intersects(double px, double py, double pr) const;
+        
+      double getx() const { return x; };
+      double gety() const { return y; };
+      double getw() const { return w; };
+      double geth() const { return h; };
+      
+      int getdepth() const { return depth; };
 
-        virtual void clear();
-
-        virtual void addAgent(const Ped::Tagent *a);
-        virtual void moveAgent(const Ped::Tagent *a);
-        virtual bool removeAgent(const Ped::Tagent *a);
-
-        virtual set<const Ped::Tagent*> getAgents() const;
-        virtual void getAgents(list<const Ped::Tagent*>& outputList) const;
-
-        virtual bool intersects(double px, double py, double pr) const;
-
-        double getx() const { return x; };
-        double gety() const { return y; };
-        double getw() const { return w; };
-        double geth() const { return h; };
-
-        int getdepth() const { return depth; };
+      void  doSafeMovement( Ped::Tagent *agent, std::set<Ped::Tagent*>& betweenRegions );
 
     protected:
         virtual void addChildren();

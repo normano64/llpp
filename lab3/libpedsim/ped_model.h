@@ -29,7 +29,8 @@ namespace Ped{
     void cleanup();
     ~Model();
 
-    void setNumThreads(size_t threads) { numThreads = threads; }
+    void setNumThreads(size_t threads);
+    size_t length;
     
   private:
     IMPLEMENTATION implementation;   

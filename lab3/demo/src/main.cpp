@@ -66,6 +66,7 @@ int main(int argc, char*argv[]) {
     }
     ParseScenario parser(scenefile);
     model.setup(parser.getAgents(),IMP);
+    model.setNumThreads(threads);
 
     QApplication app(argc, argv);
   

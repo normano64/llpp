@@ -241,3 +241,125 @@ bool Ped::Ttree::intersects(double px, double py, double pr) const {
     else
         return false;
 }
+
+void  Ped::Ttree::doSafeMovement( Ped::Tagent *agent, std::set<Ped::Tagent*>& betweenRegions ) {
+  // Search for neighboring agents
+  if(isleaf)
+    {
+      /*set<const Ped::Tagent *> neighbors;//getNeighbors(agent->getX(), agent->getY(), 2);
+
+      // if there is no tree, return all agents
+      if(tree == NULL) 
+        return set<const Ped::Tagent*>(agents.begin(), agents.end());
+
+      // create the output list
+      list<const Ped::Tagent*> neighborList;
+      getNeighbors(neighborList, agent->getX(), agent->getY(), 2);
+
+      // copy the neighbors to a set
+      return set<const Ped::Tagent*>(neighborList.begin(), neighborList.end());
+    
+      // Retrieve their positions
+      std::vector<std::pair<int, int> > takenPositions;
+      for (std::set<const Ped::Tagent*>::iterator neighborIt = neighbors.begin(); neighborIt != neighbors.end(); ++neighborIt) {
+        std::pair<int,int> position((*neighborIt)->getX(), (*neighborIt)->getY());
+        takenPositions.push_back(position);
+      }
+
+      // Compute the three alternative positions that would bring the agent
+      // closer to his desiredPosition, starting with the desiredPosition itself
+      std::vector<std::pair<int, int> > prioritizedAlternatives;
+      std::pair<int, int> pDesired(agent->getDesiredX(), agent->getDesiredY());
+      prioritizedAlternatives.push_back(pDesired);
+
+      int diffX = pDesired.first - agent->getX();
+      int diffY = pDesired.second - agent->getY();
+      std::pair<int, int> p1, p2;
+      if (diffX == 0 || diffY == 0) {
+        // Agent wants to walk straight to North, South, West or East
+        p1 = std::make_pair(pDesired.first + diffY, pDesired.second + diffX);
+        p2 = std::make_pair(pDesired.first - diffY, pDesired.second - diffX);
+      } else {
+        // Agent wants to walk diagonally
+        p1 = std::make_pair(pDesired.first, agent->getY());
+        p2 = std::make_pair(agent->getX(), pDesired.second);
+      }
+      prioritizedAlternatives.push_back(p1);
+      prioritizedAlternatives.push_back(p2);
+
+      // Find the first empty alternative position
+      for (std::vector<pair<int, int> >::iterator it = prioritizedAlternatives.begin(); it != prioritizedAlternatives.end(); ++it) {
+        // If the current position is not yet taken by any neighbor
+        if (std::find(takenPositions.begin(), takenPositions.end(), *it) == takenPositions.end()) {
+          // Set the agent's position 
+          agent->setX((*it).first);
+          agent->setY((*it).second);
+
+          // Update the quadtree
+          (*treehash)[agent]->moveAgent(agent);
+          break;
+        }
+        }*/
+      std::set<const Ped::Tagent*>::iterator it1;
+      std::set<const Ped::Tagent*>::iterator it2;
+      std::vector<std::pair<int, int> > takenPositions;
+      Ped::Tagent* agent = NULL;
+      for(it1 = agents.begin(); it1 != agents.end(); it1++)
+        {
+          agent = *it1;
+          takenPositions.clear();
+          for(it2 = agents.begin(); it2 != agents.end(); it2++)
+            {
+              std::pair<int, int> position((*it2)->getX(), (*it2)->getY());
+              takenPositions.push_back(position);
+            }
+          /*if(!intersects(agent->getDesiredX(), agent->getDesiredY(), 0))
+            {
+              betweenRegions.insert(agent);
+              continue;
+            }*/
+          std::vector<std::pair<int, int> > prioritizedAlternatives;
+          std::pair<int, int> pDesired(agent->getDesiredX(), agent->getDesiredY());
+          prioritizedAlternatives.push_back(pDesired);
+
+          int diffX = pDesired.first - agent->getX();
+          int diffY = pDesired.second - agent->getY();
+          std::pair<int, int> p1, p2;
+          if (diffX == 0 || diffY == 0) {
+            // Agent wants to walk straight to North, South, West or East
+            p1 = std::make_pair(pDesired.first + diffY, pDesired.second + diffX);
+            p2 = std::make_pair(pDesired.first - diffY, pDesired.second - diffX);
+          } else {
+            // Agent wants to walk diagonally
+            p1 = std::make_pair(pDesired.first, agent->getY());
+            p2 = std::make_pair(agent->getX(), pDesired.second);
+          }
+          prioritizedAlternatives.push_back(p1);
+          prioritizedAlternatives.push_back(p2);
+        }
+      // Find the first empty alternative position
+      bool moveBetween = false;
+      bool hasMoved = false;
+      for (std::vector<pair<int, int> >::iterator it = prioritizedAlternatives.begin(); it != prioritizedAlternatives.end(); ++it) {
+        if(!intersects((*it).first, (*it).second, 0))
+          moveBetween = true;
+        // If the current position is not yet taken by any neighbor
+        else if (std::find(takenPositions.begin(), takenPositions.end(), *it) == takenPositions.end()) {
+          // Set the agent's position 
+          agent->setX((*it).first);
+          agent->setY((*it).second);
+          
+          // Update the quadtree
+          (*treehash)[agent]->moveAgent(agent);
+          hasMoved = true;
+          break;
+        }
+      }
+      if(moveBetween != hasMoved)
+        betweenRegion.push_back(agent);
+    }
+  else
+    {
+      
+    }
+}
