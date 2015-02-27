@@ -31,13 +31,15 @@ namespace Ped{
 
     void setNumThreads(size_t threads);
     size_t length;
-    
+	  void enableRebuild(){Ped::Model::rebuild = true;}
+	  Ped::Ttree* getTree() const { return tree;}
   private:
+	  static bool rebuild;
     IMPLEMENTATION implementation;   
     std::vector<Tagent*> agents;
     void doSafeMovement( Ped::Tagent *agent);
     // The maximum quadtree depth
-    static const int treeDepth = 10;
+    static const int treeDepth;
 
     size_t numThreads;
 
@@ -49,8 +51,8 @@ namespace Ped{
     std::map<const Ped::Tagent*, Ped::Ttree*> *treehash;
 
     // Returns the set of neighboring agents for the specified position
-    set<const Ped::Tagent*> getNeighbors(int x, int y, int dist) const;
-    void getNeighbors(list<const Ped::Tagent*>& neighborList, int x, int y, int d) const;
+	  set<const Ped::Tagent*> getNeighbors(int x, int y, int dist) const;
+	  void getNeighbors(list<const Ped::Tagent*>& neighborList, int x, int y, int d) const;
   };
 }
 #endif

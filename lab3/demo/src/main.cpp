@@ -45,8 +45,10 @@ int main(int argc, char*argv[]) {
                 silent = true;
             } else if(strcmp(&argv[i][2], "plot") == 0) {
                 plot = true;
-            } else {
-                cerr << "Unrecognized command: \"" << argv[i] << "\". Ignoring ..." << endl;
+            } else if(strcmp(&argv[i][2], "rebuild") == 0) {
+			  model.enableRebuild();
+			} else {
+			  cerr << "Unrecognized command: \"" << argv[i] << "\". Ignoring ..." << endl;
 	    }
 	} else {
             scenefile = argv[i];

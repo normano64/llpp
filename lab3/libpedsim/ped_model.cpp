@@ -47,6 +47,10 @@ const std::vector<Ped::Tagent*> Ped::Model::getAgents() const {
 }
 
 void Ped::Model::tick() {
+  if(Ped::Model::rebuild)
+  {
+	tree->prune();
+  }
   std::vector<Ped::Tagent*> agents = this->getAgents();
   //cout << agents.size() << " ";
   std::set<const Ped::Tagent*> betweenRegions;
@@ -60,8 +64,6 @@ void Ped::Model::tick() {
 	  }
 
 	  tree->doSafeMovement(betweenRegions);
-//	  std::cout << "Moving " << betweenRegions.size() << " out of " << agents.size() << " agents between region borders." << std::endl;
-
 	  for(std::set<const Ped::Tagent*>::iterator it = betweenRegions.begin(); it != betweenRegions.end(); it++)
 	  {
 		agent = const_cast<Ped::Tagent*>(*it);
@@ -191,3 +193,6 @@ Ped::Model::~Model() {
 	treehash = NULL;
   }
 }
+bool Ped::Model::rebuild = false;
+
+const int Ped::Model::treeDepth = 12;

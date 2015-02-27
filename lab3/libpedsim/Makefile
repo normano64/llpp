@@ -16,7 +16,7 @@ OBJECTS_CXX = $(SOURCES_CXX:.cpp=.cxx.o)
 SOURCES_CU = tick_cuda.cu
 OBJECTS_CU = $(SOURCES_CU:.cu=.cu.o)
 
-CXXFLAGS_ = -lpthread -fopenmp -g -O3 -fno-inline -fPIC -fno-omit-frame-pointer
+CXXFLAGS_ = -lpthread -fopenmp -g -fno-inline -O2 -fPIC -fno-omit-frame-pointer
 
 
 # Workaround to make project compile on non-cuda capable machines.

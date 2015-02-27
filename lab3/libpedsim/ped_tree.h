@@ -41,7 +41,7 @@ namespace Ped {
       virtual void getAgents(list<const Ped::Tagent*>& outputList) const;
         
       virtual bool intersects(double px, double py, double pr) const;
-        
+	  void prune();
       double getx() const { return x; };
       double gety() const { return y; };
       double getw() const { return w; };
@@ -52,12 +52,12 @@ namespace Ped {
       void  doSafeMovement(std::set<const Ped::Tagent*>& betweenRegions );
 
     protected:
-        virtual void addChildren();
-        Ttree* getChildByPosition(double x, double y);
-	int cut();
-    protected:
-	std::map<const Ped::Tagent*, Ped::Ttree*> *treehash;
-        set<const Ped::Tagent*> agents;	// set and not vector, since we need to delete elements from the middle very often
+	  void getAllAgents(std::set<const Ped::Tagent*>& out);
+	  virtual void addChildren();
+	  Ttree* getChildByPosition(double x, double y);
+	  int cut();
+	  std::map<const Ped::Tagent*, Ped::Ttree*> *treehash;
+	  set<const Ped::Tagent*> agents;	// set and not vector, since we need to delete elements from the middle very often
                                         // set and not list, since deletion is based on pointer (search O(log n) instead of O(n)).
 		bool inside(double px, double py);
         bool isleaf;
@@ -66,13 +66,14 @@ namespace Ped {
         double w;
         double h;
         int depth;
-	int maxDepth;
+		int maxDepth;
 
         Ttree *tree1;
         Ttree *tree2;
         Ttree *tree3;
         Ttree *tree4;
-	Ttree *root;
+		Ttree *parent;
+		Ttree *root;
 	
     };
 }
