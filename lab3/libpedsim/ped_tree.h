@@ -49,7 +49,7 @@ namespace Ped {
       
       int getdepth() const { return depth; };
 
-      void  doSafeMovement( Ped::Tagent *agent, std::set<Ped::Tagent*>& betweenRegions );
+      void  doSafeMovement(std::set<const Ped::Tagent*>& betweenRegions );
 
     protected:
         virtual void addChildren();
@@ -59,7 +59,7 @@ namespace Ped {
 	std::map<const Ped::Tagent*, Ped::Ttree*> *treehash;
         set<const Ped::Tagent*> agents;	// set and not vector, since we need to delete elements from the middle very often
                                         // set and not list, since deletion is based on pointer (search O(log n) instead of O(n)).
-
+		bool inside(double px, double py);
         bool isleaf;
         double x;
         double y;
