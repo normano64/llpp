@@ -59,7 +59,7 @@ namespace Ped {
 	  std::map<const Ped::Tagent*, Ped::Ttree*> *treehash;
 	  set<const Ped::Tagent*> agents;	// set and not vector, since we need to delete elements from the middle very often
                                         // set and not list, since deletion is based on pointer (search O(log n) instead of O(n)).
-		bool inside(double px, double py);
+	  bool inside(double px, double py);
 
         bool isleaf;
         double x;
@@ -73,7 +73,6 @@ namespace Ped {
         Ttree *tree2;
         Ttree *tree3;
         Ttree *tree4;
-		Ttree *parent;
 		Ttree *root;
 	
     };

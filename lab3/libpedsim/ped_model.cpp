@@ -24,7 +24,7 @@ void Ped::Model::setup(std::vector<Ped::Tagent*> agentsInScenario, IMPLEMENTATIO
   treehash = new std::map<const Ped::Tagent*, Ped::Ttree*>();
 
   // Create a new quadtree containing all agents
-  tree = new Ttree(NULL,treehash, 0, treeDepth, 0, 0, 1000, 800);
+  tree = new Ttree(NULL,treehash, 0, treeDepth, -500, -400, 1000, 800);
 
   for (std::vector<Ped::Tagent*>::iterator it = agents.begin(); it != agents.end(); ++it) {
 	tree->addAgent(*it);
@@ -58,7 +58,7 @@ void Ped::Model::tick() {
   int ost = 0;
   switch(implementation) {
     case OMP:
-        #pragma omp parallel for shared(agents) schedule(auto)
+#pragma omp parallel for shared(agents) schedule(auto)
 	  for (int i = 0; i < length; i++) {
 		agents.at(i)->whereToGo();
 		agents.at(i)->go();  
@@ -69,9 +69,9 @@ void Ped::Model::tick() {
 	  {
 		agent = const_cast<Ped::Tagent*>(*it);
 		doSafeMovement(agent);
-                ost = ost + 1;
+		ost = ost + 1;
 	  }
-          //cout << agents.size() << ":" << ost << endl;
+	  //cout << agents.size() << ":" << ost << endl;
 	  break;
     default:
 	  for (int i = 0; i < length; i++) {
@@ -84,50 +84,50 @@ void Ped::Model::tick() {
 }
 
 void  Ped::Model::doSafeMovement( Ped::Tagent *agent) {
-    // Search for neighboring agents
-    set<const Ped::Tagent *> neighbors = getNeighbors(agent->getX(), agent->getY(), 2);
+  // Search for neighboring agents
+  set<const Ped::Tagent *> neighbors = getNeighbors(agent->getX(), agent->getY(), 2);
     
-    // Retrieve their positions
-    std::vector<std::pair<int, int> > takenPositions;
-    for (std::set<const Ped::Tagent*>::iterator neighborIt = neighbors.begin(); neighborIt != neighbors.end(); ++neighborIt) {
+  // Retrieve their positions
+  std::vector<std::pair<int, int> > takenPositions;
+  for (std::set<const Ped::Tagent*>::iterator neighborIt = neighbors.begin(); neighborIt != neighbors.end(); ++neighborIt) {
 	std::pair<int,int> position((*neighborIt)->getX(), (*neighborIt)->getY());
 	takenPositions.push_back(position);
-    }
+  }
 
-    // Compute the three alternative positions that would bring the agent
-    // closer to his desiredPosition, starting with the desiredPosition itself
-    std::vector<std::pair<int, int> > prioritizedAlternatives;
-    std::pair<int, int> pDesired(agent->getDesiredX(), agent->getDesiredY());
-    prioritizedAlternatives.push_back(pDesired);
+  // Compute the three alternative positions that would bring the agent
+  // closer to his desiredPosition, starting with the desiredPosition itself
+  std::vector<std::pair<int, int> > prioritizedAlternatives;
+  std::pair<int, int> pDesired(agent->getDesiredX(), agent->getDesiredY());
+  prioritizedAlternatives.push_back(pDesired);
 
-    int diffX = pDesired.first - agent->getX();
-    int diffY = pDesired.second - agent->getY();
-    std::pair<int, int> p1, p2;
-    if (diffX == 0 || diffY == 0) {
+  int diffX = pDesired.first - agent->getX();
+  int diffY = pDesired.second - agent->getY();
+  std::pair<int, int> p1, p2;
+  if (diffX == 0 || diffY == 0) {
 	// Agent wants to walk straight to North, South, West or East
 	p1 = std::make_pair(pDesired.first + diffY, pDesired.second + diffX);
 	p2 = std::make_pair(pDesired.first - diffY, pDesired.second - diffX);
-    } else {
+  } else {
 	// Agent wants to walk diagonally
 	p1 = std::make_pair(pDesired.first, agent->getY());
 	p2 = std::make_pair(agent->getX(), pDesired.second);
-    }
-    prioritizedAlternatives.push_back(p1);
-    prioritizedAlternatives.push_back(p2);
+  }
+  prioritizedAlternatives.push_back(p1);
+  prioritizedAlternatives.push_back(p2);
 
-    // Find the first empty alternative position
-    for (std::vector<pair<int, int> >::iterator it = prioritizedAlternatives.begin(); it != prioritizedAlternatives.end(); ++it) {
+  // Find the first empty alternative position
+  for (std::vector<pair<int, int> >::iterator it = prioritizedAlternatives.begin(); it != prioritizedAlternatives.end(); ++it) {
 	// If the current position is not yet taken by any neighbor
 	if (std::find(takenPositions.begin(), takenPositions.end(), *it) == takenPositions.end()) {
-            // Set the agent's position 
-            agent->setX((*it).first);
-            agent->setY((*it).second);
+	  // Set the agent's position 
+	  agent->setX((*it).first);
+	  agent->setY((*it).second);
 
-            // Update the quadtree
-            (*treehash)[agent]->moveAgent(agent);
-            break;
+	  // Update the quadtree
+	  (*treehash)[agent]->moveAgent(agent);
+	  break;
 	}
-    }
+  }
 }
 
 /// Returns the list of neighbors within dist of the point x/y. This
@@ -180,8 +180,8 @@ void Ped::Model::getNeighbors(list<const Ped::Tagent*>& neighborList, int x, int
 		treestack.push(t->tree2);
 	  if (t->tree3->intersects(x, y, dist))
 		treestack.push(t->tree3);
-		if (t->tree4->intersects(x, y, dist))
-		  treestack.push(t->tree4);
+	  if (t->tree4->intersects(x, y, dist))
+		treestack.push(t->tree4);
 	}
   }
 }
