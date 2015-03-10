@@ -20,20 +20,20 @@ MainWindow::MainWindow(const Ped::Model &model) : model(model)
 
 
   // Paint on surface
-  scene->setBackgroundBrush(Qt::black);
+  scene->setBackgroundBrush(Qt::white);
   //graphicsscene->setItemIndexMethod(QGraphicsScene::NoIndex);
   
 
-  for (int x=0; x<=800; x+=cellsizePixel)
-  {
-    scene->addLine(x,0,x,800, QPen(Qt::gray));
-  }
+//   for (int x=0; x<=800; x+=cellsizePixel)
+//   {
+//     scene->addLine(x,0,x,800, QPen(Qt::gray));
+//   }
 
-// Now add the horizontal lines, paint them green
-  for (int y=0; y<=800; y+=cellsizePixel)
-  {
-    scene->addLine(0,y,800,y, QPen(Qt::gray));
-  }
+// // Now add the horizontal lines, paint them green
+//   for (int y=0; y<=800; y+=cellsizePixel)
+//   {
+//     scene->addLine(0,y,800,y, QPen(Qt::gray));
+//   }
 
   // Create viewAgents with references to the position of the model counterparts
   auto &agents = model.getAgents();
@@ -50,6 +50,25 @@ MainWindow::MainWindow(const Ped::Model &model) : model(model)
 void MainWindow::paint() {
   //std::cout << "painting" << endl;
 
+    for (unsigned int i = 0; i < trees.size(); i++) {
+      scene->removeItem(trees[i]);
+  }
+  trees.clear();
+ 
+  set<const Ped::Ttree*> leafs = model.tree->getLeafs();
+  for (set<const Ped::Ttree*>::iterator it = leafs.begin(); it != leafs.end(); ++it) {
+      Ped::Ttree *t = (Ped::Ttree *)(*it);
+      trees.push_back(scene->addRect(t->getx() * cellsizePixel,
+                                     t->gety() * cellsizePixel,
+                                     t->getw() * cellsizePixel,
+                                     t->geth() * cellsizePixel));
+      QString x = QString("%1").arg(t->agents.size());
+      QGraphicsSimpleTextItem *y = scene->addSimpleText(x);
+      y->setPos((t->getx() + t->getw() / 2) * cellsizePixel,
+                (t->gety() + t->geth() / 2) * cellsizePixel);
+      trees.push_back(y);
+ 
+  } 
   
   for(auto a : viewAgents)
     {

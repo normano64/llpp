@@ -33,6 +33,8 @@ namespace Ped{
     size_t length;
 	  void enableRebuild(){Ped::Model::rebuild = true;}
 	  Ped::Ttree* getTree() const { return tree;}
+
+              Ped::Ttree *tree;
   private:
 	  static bool rebuild;
     IMPLEMENTATION implementation;   
@@ -44,7 +46,7 @@ namespace Ped{
     size_t numThreads;
 
     // Keeps track of the positions of each agent
-    Ped::Ttree *tree;
+
 
     // Maps the agent to the tree node containing it. Convenience data structure
     // in order to update the tree in case the agent moves.

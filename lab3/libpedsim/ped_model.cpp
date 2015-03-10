@@ -49,7 +49,10 @@ const std::vector<Ped::Tagent*> Ped::Model::getAgents() const {
 void Ped::Model::tick() {
   if(Ped::Model::rebuild)
   {
-	tree->prune();
+      //tree->prune();
+      tree->clear();
+      for(size_t i = 0; i < agents.size(); i++)
+          tree->addAgent(agents[i]);
   }
   std::vector<Ped::Tagent*> agents = this->getAgents();
   //cout << agents.size() << " ";

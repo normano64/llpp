@@ -26,6 +26,7 @@ class MainWindow : public QMainWindow {
   QGraphicsScene * scene;
   const Ped::Model &model;
 std::vector<ViewAgent*> viewAgents;
+ std::vector<QGraphicsItem*> trees;
 };
 
 
