@@ -28,7 +28,7 @@ namespace Ped {
       friend class Ped::Model;
 
     public:
-      Ttree(Ped::Ttree *root, std::map<const Ped::Tagent*, Ped::Ttree*> *treehash, int depth, int maxDepth, double x, double y, double w, double h);
+      Ttree(Ped::Ttree *root, std::map<const Ped::Tagent*, Ped::Ttree*> *treehash, int depth, int maxDepth, double x, double y, double w, double h, int mAgents);
       virtual ~Ttree();
       
       virtual void clear();
@@ -48,15 +48,17 @@ namespace Ped {
       double geth() const { return h; };
       
       int getdepth() const { return depth; };
-      void _doSafeMovement(std::set<const Ped::Tagent*>& betweenRegions, Ttree* parent);
-      void doSafeMovement(std::set<const Ped::Tagent*>& betweenRegions,int depth);
+      void _doSafeMovement(std::vector<std::set<const Ped::Tagent*> >& betweenRegions, int tid);
+      void doSafeMovement(std::vector<std::set<const Ped::Tagent*> >& betweenRegions, int depth, int tid=-1);
       std::set<const Ttree*>  getLeafs();
       	  set<const Ped::Tagent*> agents;	// set and not vector, since we need to delete elements from the middle very often
     protected:
+		  int maxAgents;
 	  void getAllAgents(std::set<const Ped::Tagent*>& out);
 	  virtual void addChildren();
-	  Ttree* getChildByPosition(double x, double y);
+	  Ttree* getChildByPosition(double x, double y) const;
 	  int cut();
+	  bool occupied(double x, double y) const;
 	  std::map<const Ped::Tagent*, Ped::Ttree*> *treehash;
 
                                         // set and not list, since deletion is based on pointer (search O(log n) instead of O(n)).

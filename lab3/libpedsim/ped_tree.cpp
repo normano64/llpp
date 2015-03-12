@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <algorithm>
 #include <iostream>
+#include <omp.h>
 using namespace std;
 
 #define INSIDE(_x, _y, x, y, w, h) (_x >= x && _x <= x+w && _y >= y && _y <= y+h)
@@ -15,7 +16,7 @@ using namespace std;
 /// Description: set intial values
 /// \author  chgloor
 /// \date    2012-01-28
-Ped::Ttree::Ttree(Ped::Ttree *root,std::map<const Ped::Tagent*, Ped::Ttree*> *treehash, int pdepth, int pmaxDepth, double px, double py, double pw, double ph) {
+Ped::Ttree::Ttree(Ped::Ttree *root,std::map<const Ped::Tagent*, Ped::Ttree*> *treehash, int pdepth, int pmaxDepth, double px, double py, double pw, double ph, int mAgents) {
   // more initializations here. not really necessary to put them into the initializator list, too.
   this->root = root != NULL ? root: this;
   this->treehash = treehash;
@@ -30,6 +31,7 @@ Ped::Ttree::Ttree(Ped::Ttree *root,std::map<const Ped::Tagent*, Ped::Ttree*> *tr
   tree2 = NULL;
   tree3 = NULL;
   tree4 = NULL;
+  maxAgents = mAgents;
 };
 
 
@@ -100,10 +102,10 @@ void Ped::Ttree::addAgent(const Ped::Tagent *a)
 	else
 	{
 	  std::cout << "Oh-oh, we have an oopsie!\t x:" << _x << " - " << x << "\t y: " << _y << " - " << y << "\t w: " << w << "\t h" << h << std::endl;
-	  }
+	}
   }
   
-  if (agents.size() > 16 && depth < maxDepth) 
+  if (agents.size() > maxAgents && depth < maxDepth) 
   {
 	isleaf = false;
 	addChildren();
@@ -133,7 +135,7 @@ void Ped::Ttree::addAgent(const Ped::Tagent *a)
 	  else
 	  {
 		std::cout << "Another oopsie" << std::endl;
-		}
+	  }
 	  agents.erase(a);
 	}
   }
@@ -144,21 +146,21 @@ void Ped::Ttree::addAgent(const Ped::Tagent *a)
 /// \author  chgloor
 /// \date    2012-01-28
 void Ped::Ttree::addChildren() {
-  tree1 = new Ped::Ttree(root,treehash, depth+1, maxDepth,  x, y, w/2.0, h/2.0);
-  tree2 = new Ped::Ttree(root,treehash, depth+1, maxDepth,  x+w/2.0, y, w/2.0, h/2.0);
-  tree3 = new Ped::Ttree(root,treehash, depth+1, maxDepth,  x+w/2.0, y+h/2.0, w/2.0, h/2.0);
-  tree4 = new Ped::Ttree(root,treehash, depth+1, maxDepth,  x, y+h/2.0, w/2.0, h/2.0);
+  tree1 = new Ped::Ttree(root,treehash, depth+1, maxDepth,  x, y, w/2.0, h/2.0, maxAgents);
+  tree2 = new Ped::Ttree(root,treehash, depth+1, maxDepth,  x+w/2.0, y, w/2.0, h/2.0, maxAgents);
+  tree3 = new Ped::Ttree(root,treehash, depth+1, maxDepth,  x+w/2.0, y+h/2.0, w/2.0, h/2.0, maxAgents);
+  tree4 = new Ped::Ttree(root,treehash, depth+1, maxDepth,  x, y+h/2.0, w/2.0, h/2.0, maxAgents);
 }
 
 
-Ped::Ttree* Ped::Ttree::getChildByPosition(double xIn, double yIn) {
-  if((xIn <= x+w/2) && (yIn <= y+h/2))
+Ped::Ttree* Ped::Ttree::getChildByPosition(double xIn, double yIn) const {
+  if(tree1->inside(xIn, yIn))
 	return tree1;
-  if((xIn >= x+w/2) && (yIn <= y+h/2))
+  if(tree2->inside(xIn, yIn))
 	return tree2;
-  if((xIn >= x+w/2) && (yIn >= y+h/2))
+  if(tree3->inside(xIn, yIn))
 	return tree3;
-  if((xIn <= x+w/2) && (yIn >= y+h/2))
+  if(tree4->inside(xIn, yIn))
 	return tree4;
 
   // this should never happen
@@ -172,7 +174,8 @@ Ped::Ttree* Ped::Ttree::getChildByPosition(double xIn, double yIn) {
 /// \date    2012-01-28
 /// \param   *a the agent to update
 void Ped::Ttree::moveAgent(const Ped::Tagent *a) {
-  if ((a->getX() < x) || (a->getX() > (x+w)) || (a->getY() < y) || (a->getY() > (y+h))) {
+  if (!inside(a->getX(), a->getY()))
+  {//(a->getX() < x) || (a->getX() > (x+w)) || (a->getY() < y) || (a->getY() > (y+h))) {
 	agents.erase(a);
 	root->addAgent(a);
   }
@@ -203,7 +206,7 @@ int Ped::Ttree::cut() {
   count += tree2->cut();
   count += tree3->cut();
   count += tree4->cut();
-  if (count < 5) {
+  if (count < maxAgents/2) {
 	assert(tree1->isleaf == true);
 	assert(tree2->isleaf == true);
 	assert(tree3->isleaf == true);
@@ -280,18 +283,18 @@ bool Ped::Ttree::intersects(double px, double py, double pr) const {
 bool Ped::Ttree::inside(double px, double py)
 {
   //cout << px << ">=" <<  x << "&&" << px << "<=" << x+w << "&&" << py << ">=" << y << "&&" << py << "<=" << y+h << endl;
-  return (px >= x && px <= x+w && py >= y && py <= y+h);
+  return (px >= x && px < x+w && py >= y && py < y+h);
 }
 
 
-void Ped::Ttree::_doSafeMovement(std::set<const Ped::Tagent*>& betweenRegions, Ped::Ttree* Parent)
+void Ped::Ttree::_doSafeMovement(std::vector<set<const Ped::Tagent*> >& betweenRegions, int tid)
 {
   if(!isleaf)
   {
-	tree1->_doSafeMovement(betweenRegions, Parent);
-	tree2->_doSafeMovement(betweenRegions, Parent);
-	tree3->_doSafeMovement(betweenRegions, Parent);
-	tree4->_doSafeMovement(betweenRegions, Parent);
+	tree1->_doSafeMovement(betweenRegions, tid);
+	tree2->_doSafeMovement(betweenRegions, tid);
+	tree3->_doSafeMovement(betweenRegions, tid);
+	tree4->_doSafeMovement(betweenRegions, tid);
   }
   else
   {
@@ -308,6 +311,7 @@ void Ped::Ttree::_doSafeMovement(std::set<const Ped::Tagent*>& betweenRegions, P
 	std::vector<pair<int, int> >::iterator it;
 	std::set<const Ped::Tagent*> _agents = agents;
 	std::map<const Ped::Tagent*, bool> erased;
+	int tid = omp_get_thread_num();
 	for(it1 = _agents.begin(); it1 != _agents.end(); it1++)
 	{
 	  position = std::make_pair((*it1)->getX(), (*it1)->getY());
@@ -318,11 +322,6 @@ void Ped::Ttree::_doSafeMovement(std::set<const Ped::Tagent*>& betweenRegions, P
 	  prioritizedAlternatives.clear();
 	  agent = const_cast<Tagent*>(*it1);
 	  oldPos = std::make_pair(agent->getX(), agent->getY());
-	  if(!Parent->inside(agent->getDesiredX(), agent->getDesiredY()))
-	  {
-              betweenRegions.insert(agent);
-		continue;
-	  }
 
 	  pDesired = std::make_pair(agent->getDesiredX(), agent->getDesiredY());
 	  prioritizedAlternatives.push_back(pDesired);
@@ -338,30 +337,25 @@ void Ped::Ttree::_doSafeMovement(std::set<const Ped::Tagent*>& betweenRegions, P
 		p1 = std::make_pair(pDesired.first, agent->getY());
 		p2 = std::make_pair(agent->getX(), pDesired.second);
 	  }
-	  if(!(Parent->inside(p1.first, p1.second) && Parent->inside(p2.first, p2.second)))
-	  {
-              betweenRegions.insert(agent);
-		continue;
-	  }
           
 	  prioritizedAlternatives.push_back(p1);
 	  prioritizedAlternatives.push_back(p2);
 	  // Find the first empty alternative position
 	  for (it = prioritizedAlternatives.begin(); it != prioritizedAlternatives.end(); ++it) {
 		// If the current position is not yet taken by any neighbor
+		if(!inside((*it).first, (*it).second))
+		{
+		  betweenRegions[tid].insert(agent);		
+		  break;
+		}
 		if (std::find(takenPositions.begin(), takenPositions.end(), *it) == takenPositions.end()) {
 		  // Set the agent's position
 		  agent->setX((*it).first);
 		  agent->setY((*it).second);
 		  std::vector<std::pair<int, int> >::iterator posIt = std::find(takenPositions.begin(), takenPositions.end(), oldPos);
 		  takenPositions.erase(posIt);
-		  if(!inside((*it).first, (*it).second))
-		  {
-			agents.erase(agent);
-			(*treehash).erase(agent);
-			Parent->addAgent(agent);
-		  }
 		  takenPositions.push_back(std::make_pair(agent->getX(), agent->getY()));
+//		  this->moveAgent(agent);
 		  break;
 		}
 	  }
@@ -369,108 +363,120 @@ void Ped::Ttree::_doSafeMovement(std::set<const Ped::Tagent*>& betweenRegions, P
   }
 }
 
-void Ped::Ttree::doSafeMovement(std::set<const Ped::Tagent*>&betweenRegions,int depth) 
+void Ped::Ttree::doSafeMovement(std::vector<std::set<const Ped::Tagent*> >&betweenRegions,int depth, int tid) 
 {
-    std::set<const Ped::Tagent*> _between;
   // Search for neighboring agents
   if(isleaf)
   {
-	_doSafeMovement(betweenRegions, this);
-  }
-  else if(depth >= 3)
-  {
-      tree1->_doSafeMovement(betweenRegions, tree1);
-      tree2->_doSafeMovement(betweenRegions, tree2);
-      tree3->_doSafeMovement(betweenRegions, tree3);
-      tree4->_doSafeMovement(betweenRegions, tree4);
+	_doSafeMovement(betweenRegions, tid);
   }
   else
   {
-      #pragma omp parallel shared(_between) private(depth)
+#pragma omp parallel shared(betweenRegions) private(depth, tid)
 	{
-            #pragma omp sections nowait
-            {
-                #pragma omp section
-                tree1->doSafeMovement(_between,depth+1);
-                #pragma omp section
-                tree2->doSafeMovement(_between,depth+1);
-                #pragma omp section
-                tree3->doSafeMovement(_between,depth+1);
-                #pragma omp section
-                tree4->doSafeMovement(_between,depth+1);
-            }
-        }
-        for(std::set<const Ped::Tagent*>::iterator it = _between.begin(); it != _between.end(); it++)
-            betweenRegions.insert((*it));
+#pragma omp single
+	  {
+#pragma omp task
+		{
+		  tid = omp_get_thread_num();
+		  tree1->doSafeMovement(betweenRegions,depth+1, tid);
+		}
+#pragma omp task
+		{
+		  tid = omp_get_thread_num();
+		  tree2->doSafeMovement(betweenRegions,depth+1, tid);
+		}
+#pragma omp task
+		{
+		  tid = omp_get_thread_num();
+		  tree3->doSafeMovement(betweenRegions,depth+1, tid);
+		}
+#pragma omp task
+		{
+		  tid = omp_get_thread_num();
+		  tree4->doSafeMovement(betweenRegions,depth+1, tid);
+		}
+	  }
+	}
   }
 }
 	
-  void Ped::Ttree::prune()
+void Ped::Ttree::prune()
+{
+  if(!isleaf)
   {
-	if(!isleaf)
+	std::set<const Ped::Tagent*> out;
+	getAllAgents(out);
+	if(out.size() <= 4 ) // The region is either empty or has less than or equal the amount of agents as the maximum amount and can thus be pruned.
 	{
-	  std::set<const Ped::Tagent*> out;
-	  getAllAgents(out);
-	  if(out.size() <= 4 ) // The region is either empty or has less than or equal the amount of agents as the maximum amount and can thus be pruned.
+	  isleaf = true;
+	  delete tree1; tree1 = NULL;
+	  delete tree2; tree2 = NULL;
+	  delete tree3; tree3 = NULL;
+	  delete tree4; tree4 = NULL;
+	  const Ped::Tagent* agent;
+	  for(std::set<const Ped::Tagent*>::iterator it = out.begin(); it != out.end(); it++)
 	  {
-		isleaf = true;
-		delete tree1; tree1 = NULL;
-		delete tree2; tree2 = NULL;
-		delete tree3; tree3 = NULL;
-		delete tree4; tree4 = NULL;
-		const Ped::Tagent* agent;
-		for(std::set<const Ped::Tagent*>::iterator it = out.begin(); it != out.end(); it++)
-		{
-		  agent = *it;
-		  agents.insert(agent);
-		  (*treehash)[agent] = this;
-		}
-	  }	
-	  else // Otherwise, prune each sub-tree.
-	  {
-		tree1->prune();
-		tree2->prune();
-		tree3->prune();
-		tree4->prune();
+		agent = *it;
+		agents.insert(agent);
+		(*treehash)[agent] = this;
 	  }
+	}	
+	else // Otherwise, prune each sub-tree.
+	{
+	  tree1->prune();
+	  tree2->prune();
+	  tree3->prune();
+	  tree4->prune();
 	}
   }
+}
 
 
-  void Ped::Ttree::getAllAgents(std::set<const Ped::Tagent*>& out)
+void Ped::Ttree::getAllAgents(std::set<const Ped::Tagent*>& out)
+{
+  if(isleaf)
   {
-	if(isleaf)
+	for(std::set<const Ped::Tagent*>::iterator it = agents.begin(); it != agents.end(); it++)
 	{
-	  for(std::set<const Ped::Tagent*>::iterator it = agents.begin(); it != agents.end(); it++)
-	  {
-		out.insert(*it);
-	  }
-	}
-	else
-	{
-	  tree1->getAllAgents(out);
-	  tree2->getAllAgents(out);
-	  tree3->getAllAgents(out);
-	  tree4->getAllAgents(out);
+	  out.insert(*it);
 	}
   }
+  else
+  {
+	tree1->getAllAgents(out);
+	tree2->getAllAgents(out);
+	tree3->getAllAgents(out);
+	tree4->getAllAgents(out);
+  }
+}
 
 void Ped::Ttree::_getLeafs(std::set<const Ped::Ttree*> & out)
 {
-    if(isleaf)
-        out.insert(this);
-    else
-        {
-            tree1->_getLeafs(out);
-            tree2->_getLeafs(out);
-            tree3->_getLeafs(out);
-            tree4->_getLeafs(out);
-        }
+  if(isleaf)
+	out.insert(this);
+  else
+  {
+	tree1->_getLeafs(out);
+	tree2->_getLeafs(out);
+	tree3->_getLeafs(out);
+	tree4->_getLeafs(out);
+  }
 }
 
 std::set<const Ped::Ttree*> Ped::Ttree::getLeafs()
 {
-    std::set<const Ped::Ttree*> out;
-    _getLeafs(out);
-    return out;
+  std::set<const Ped::Ttree*> out;
+  _getLeafs(out);
+  return out;
+}
+
+bool Ped::Ttree::occupied(double x, double y) const
+{
+  for(std::set<const Ped::Tagent*>::iterator it = agents.begin(); it != agents.end(); it++)
+  {
+	if((*it)->getX() == x && (*it)->getY() == y)
+	  return true;
+  }
+  return false;
 }

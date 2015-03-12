@@ -32,11 +32,21 @@ namespace Ped{
     void setNumThreads(size_t threads);
     size_t length;
 	  void enableRebuild(){Ped::Model::rebuild = true;}
+	  void disableRebuild(){Ped::Model::rebuild = false;}
+	  void enablePrune() {Ped::Model::prune = true;}
+	  void disablePrune() { Ped::Model::prune = false;}
+	  void enableTest(){Ped::Model::test = true;}
+	  void setAgentsPerRegion(int num){Ped::Model::agentsPerRegion = num;}
 	  Ped::Ttree* getTree() const { return tree;}
-
-              Ped::Ttree *tree;
+	  Ped::Ttree *tree;
+	  bool getDrawTree() const {return Ped::Model::drawTree;}
+	  void enableDrawTree() {Ped::Model::drawTree = true;}
   private:
 	  static bool rebuild;
+	  static bool prune;
+	  static bool test;
+	  static bool drawTree;
+	  static int agentsPerRegion;
     IMPLEMENTATION implementation;   
     std::vector<Tagent*> agents;
     void doSafeMovement( Ped::Tagent *agent);

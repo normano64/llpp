@@ -24,7 +24,7 @@ void Ped::Model::setup(std::vector<Ped::Tagent*> agentsInScenario, IMPLEMENTATIO
   treehash = new std::map<const Ped::Tagent*, Ped::Ttree*>();
 
   // Create a new quadtree containing all agents
-  tree = new Ttree(NULL,treehash, 0, treeDepth, -500, -400, 1000, 800);
+  tree = new Ttree(NULL,treehash, 0, treeDepth, -500, -400, 1000, 800, agentsPerRegion);
 
   for (std::vector<Ped::Tagent*>::iterator it = agents.begin(); it != agents.end(); ++it) {
 	tree->addAgent(*it);
@@ -47,34 +47,43 @@ const std::vector<Ped::Tagent*> Ped::Model::getAgents() const {
 }
 
 void Ped::Model::tick() {
+  int tweens = 0;
   if(Ped::Model::rebuild)
   {
-      //tree->prune();
       tree->clear();
       for(size_t i = 0; i < agents.size(); i++)
           tree->addAgent(agents[i]);
   }
+  else if(Ped::Model::prune)
+  {
+	tree->prune();
+  }
   std::vector<Ped::Tagent*> agents = this->getAgents();
   //cout << agents.size() << " ";
-  std::set<const Ped::Tagent*> betweenRegions;
+  std::vector<std::set<const Ped::Tagent*> >betweenRegions;
+  for(int i = 0; i < numThreads; i++)
+  {
+	betweenRegions.push_back(std::set<const Ped::Tagent*>());
+  }
   Ped::Tagent* agent = NULL;    
-  int ost = 0;
   switch(implementation) {
     case OMP:
 #pragma omp parallel for shared(agents) schedule(auto)
 	  for (int i = 0; i < length; i++) {
 		agents.at(i)->whereToGo();
-		agents.at(i)->go();  
+		agents.at(i)->go();
 	  }
 
 	  tree->doSafeMovement(betweenRegions,0);
-	  for(std::set<const Ped::Tagent*>::iterator it = betweenRegions.begin(); it != betweenRegions.end(); it++)
+	  for(std::vector<set<const Ped::Tagent*> >::iterator mit = betweenRegions.begin(); mit != betweenRegions.end(); mit++)
 	  {
-		agent = const_cast<Ped::Tagent*>(*it);
-		doSafeMovement(agent);
-		ost = ost + 1;
+		for(std::set<const Ped::Tagent*>::iterator it = (*mit).begin(); it != (*mit).end(); it++)
+		{
+		  agent = const_cast<Ped::Tagent*>(*it);
+		  doSafeMovement(agent);
+		  tweens++;
+		}
 	  }
-	  //cout << agents.size() << ":" << ost << endl;
 	  break;
     default:
 	  for (int i = 0; i < length; i++) {
@@ -83,6 +92,20 @@ void Ped::Model::tick() {
 		doSafeMovement(agents.at(i));
 	  }
 	  break;
+  }
+  if(Ped::Model::test)
+  {
+	cout << "Moving " << tweens << " out of " << agents.size() << " agents across borders." << endl;
+	for(int i = 0; i < agents.size(); i++)
+	{
+	  for(int j = i+1; j < agents.size(); j++)
+	  {
+		if(agents[i]->getX() == agents[j]->getX() && agents[i]->getY() == agents[j]->getY())
+		{
+		  cout << "Overlapping agents -> " << i << " and " << j << "." << endl;
+		}
+	  }
+	}
   }
 }
 
@@ -200,5 +223,8 @@ Ped::Model::~Model() {
   }
 }
 bool Ped::Model::rebuild = false;
-
+bool Ped::Model::prune = false;
+bool Ped::Model::test = false;
+bool Ped::Model::drawTree = false;
+int Ped::Model::agentsPerRegion = 8;
 const int Ped::Model::treeDepth = 12;

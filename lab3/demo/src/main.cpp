@@ -41,12 +41,23 @@ int main(int argc, char*argv[]) {
 	    } else if(strcmp(&argv[i][2], "threads") == 0) {
                 i+=1;
                 threads = atoi((const char*) argv[i]);
+	    } else if(strcmp(&argv[i][2], "agents") == 0) {
+                i+=1;
+                model.setAgentsPerRegion(atoi((const char*) argv[i]));
             } else if(strcmp(&argv[i][2], "silent") == 0) {
                 silent = true;
             } else if(strcmp(&argv[i][2], "plot") == 0) {
                 plot = true;
             } else if(strcmp(&argv[i][2], "rebuild") == 0) {
 			  model.enableRebuild();
+			  model.disablePrune();
+            } else if(strcmp(&argv[i][2], "prune") == 0) {
+			  model.enablePrune();
+			  model.disableRebuild();
+            } else if(strcmp(&argv[i][2], "test") == 0) {
+			  model.enableTest();
+            } else if(strcmp(&argv[i][2], "draw-tree") == 0) {
+			  model.enableDrawTree();
 			} else {
 			  cerr << "Unrecognized command: \"" << argv[i] << "\". Ignoring ..." << endl;
 	    }
